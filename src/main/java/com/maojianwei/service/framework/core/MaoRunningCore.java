@@ -5,6 +5,7 @@ import com.maojianwei.service.framework.lib.MaoAbstractRunningTask;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class MaoRunningCore {
 
@@ -36,7 +37,27 @@ public class MaoRunningCore {
         initPool();
     }
 
+    public void stopPool() {
+        runningPool.shutdownNow();
+    }
+
+    public boolean waitPoolFinish(int milliseconds) throws InterruptedException {
+        return runningPool.awaitTermination(milliseconds, TimeUnit.MILLISECONDS);
+    }
+
     public void runModule(MaoAbstractModule module) {
         runningPool.submit(new MaoAbstractRunningTask(module));
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
