@@ -5,9 +5,9 @@ Bootstrap.java is the entry of this framework, and it can be an example for you 
 
 ## Architecture
 
-**Your Apps/Modules** ---register---> **ModuleManager** ---send-to-activate---> **RunningCore**
+**Your Apps/Modules** ---register-to---> **ModuleManager** ---send-to-run---> **RunningCore**
 
-**Your Web needs** ---extend---> **WebController** ---loaded-by---> **WebSystem** ---register---> **ModuleManager**
+**Your Web needs** ---extend---> **WebController** ---loaded-by---> **WebSystem** ---register-to---> **ModuleManager**
 
 .
 
