@@ -89,7 +89,7 @@
 
         <plugins>
                  
-            <!-- Use spring plugin to enable the web module (Spring Web),
+            <!-- Use spring plugin to enable the web module (Spring Boot & MVC),
                  and collect all dependencies that our framework needs. -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
