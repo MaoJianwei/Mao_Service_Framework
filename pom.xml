@@ -88,7 +88,7 @@
     <build>
 
         <plugins>
-                 
+
             <!-- Use spring plugin to enable the web module (Spring Boot & MVC),
                  and collect all dependencies that our framework needs. -->
             <plugin>
@@ -103,6 +103,7 @@
                     </execution>
                 </executions>
             </plugin>
+
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
