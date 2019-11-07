@@ -31,13 +31,13 @@ public class Bootstrap {
         }
 
 
-        boolean webBool = moduleManager.unregisterModule(webSystem, webKey);
-        webBool = moduleManager.unregisterModule(webSystem, webKey);
+        boolean webBool = moduleManager.unregisterModule(webSystem, webKey); // For demonstrating, return True
+        webBool = moduleManager.unregisterModule(webSystem, webKey);         // For demonstrating, return False without affect.
 
         core.stopPool();
 
         try {
-            while (core.waitPoolFinish(500)) {}
+            while (!core.waitPoolFinish(500)) {}
             System.out.println("Running Pool finish.");
         } catch (InterruptedException e) {
             System.out.println("InterruptedException when core.waitPoolFinish().");
