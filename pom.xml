@@ -88,50 +88,18 @@
     <build>
 
         <plugins>
-            <!-- generate Manifest -->
+                 
+            <!-- Use spring plugin to enable the web module (Spring Web),
+                 and collect all dependencies that our framework needs. -->
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.1.2</version>
-                <configuration>
-                    <archive>
-                        <manifest>
-
-                            <mainClass>com.maojianwei.service.framework.Bootstrap</mainClass>
-
-                            <!-- add dependency classpath: ./dependency-jars/ should be same to maven-dependency-plugin below-->
-                            <!--<addClasspath>true</addClasspath>-->
-                            <!--<classpathPrefix>dependency-jars/</classpathPrefix>-->
-
-                            <!-- add detail info to manifest -->
-                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                            <!--<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>-->
-
-                        </manifest>
-                    </archive>
-                </configuration>
-            </plugin>
-
-
-            <!-- maven-shade-plugin will unzip the dependency jar, copy the .class files to our app jar -->
-            <!-- so all dependencies is OK -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.1</version>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>2.2.1.RELEASE</version>
                 <executions>
                     <execution>
-                        <phase>package</phase>
                         <goals>
-                            <goal>shade</goal>
+                            <goal>repackage</goal>
                         </goals>
-                        <!--<configuration>-->
-                        <!--<transformers>-->
-                        <!--<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">-->
-                        <!--<mainClMaoChinesePoetryetry</mainClass>-->
-                        <!--</transformer>-->
-                        <!--</transformers>-->
-                        <!--</configuration>-->
                     </execution>
                 </executions>
             </plugin>
