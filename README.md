@@ -1,5 +1,5 @@
 # MaoFramework :)
-A lightweight service framework for you to build up **modular System** or create simple **Applications**.
+A lightweight service framework for you to build up **modular System** or create **simple Applications**.
 
 .
 
