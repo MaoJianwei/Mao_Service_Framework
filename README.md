@@ -13,7 +13,7 @@ A lightweight service framework for you to build up **modular System** or create
 
 .
 
-(WebSystem/WebController are based on Spring Boot)
+(WebSystem/WebController are based on Spring Boot & MVC)
 
 
 ## Architect
