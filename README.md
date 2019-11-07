@@ -1,13 +1,13 @@
 # MaoFramework
 Mao lightweight service framework
 
-Bootstrap.java is the entry of this framework, and it can be an example for you to do some extension/develop your Apps based on this service framework.
+**Bootstrap.java** is the entry of this framework, and it can be an **example** for you to do some **extension** / **develop** your Apps based on this service framework.
 
 ## Architecture
 
-**Your Apps/Modules** ---register-to---> **ModuleManager** ---send-to-run---> **RunningCore**
+***Your Apps/Modules*** ---register-to---> **ModuleManager** ---send-to-run---> **RunningCore**
 
-**Your Web needs** ---extend---> **WebController** ---loaded-by---> **WebSystem** ---register-to---> **ModuleManager**
+***Your Web needs*** ---extend---> **WebController** ---loaded-by---> **WebSystem** ---register-to---> **ModuleManager**
 
 .
 
