@@ -1,5 +1,7 @@
-# MaoFramework
-Mao lightweight service framework
+# MaoFramework :)
+A lightweight service framework for you to build up **modular System** or create simple **Applications**.
+
+.
 
 **Bootstrap.java** is the entry of this framework, and it can be an **example** for you to do some **extension** / **develop** your Apps based on this service framework.
 
