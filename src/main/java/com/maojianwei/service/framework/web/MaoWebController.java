@@ -1,4 +1,4 @@
-package com.maojianwei.service.framework.core.web;
+package com.maojianwei.service.framework.web;
 
 import com.maojianwei.service.framework.core.MaoRunningCore;
 import org.springframework.web.bind.annotation.RequestMapping;

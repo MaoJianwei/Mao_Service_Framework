@@ -2,7 +2,7 @@ package com.maojianwei.service.framework;
 
 import com.maojianwei.service.framework.core.MaoModuleManager;
 import com.maojianwei.service.framework.core.MaoRunningCore;
-import com.maojianwei.service.framework.core.web.MaoWebSystem;
+import com.maojianwei.service.framework.web.MaoWebSystem;
 
 /**
  * Mao service framework (lightweight).

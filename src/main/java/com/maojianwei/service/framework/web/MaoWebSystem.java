@@ -1,4 +1,4 @@
-package com.maojianwei.service.framework.core.web;
+package com.maojianwei.service.framework.web;
 
 import com.maojianwei.service.framework.lib.MaoAbstractModule;
 import org.springframework.boot.SpringApplication;
