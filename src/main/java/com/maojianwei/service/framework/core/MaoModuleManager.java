@@ -17,10 +17,10 @@ public class MaoModuleManager {
 
     private MaoRunningCore runningCore;
 
-    public MaoModuleManager() {
+
+    private MaoModuleManager() {
         runningCore = MaoRunningCore.getInstance();
     }
-
     private static MaoModuleManager singletonInstance;
     public static MaoModuleManager getInstance() {
         if (singletonInstance == null) {

@@ -11,6 +11,7 @@ public class MaoRunningCore {
 
     private ExecutorService runningPool;
 
+    private MaoRunningCore() {}
     private static MaoRunningCore singletonInstance;
     public static MaoRunningCore getInstance() {
         if (singletonInstance == null) {
