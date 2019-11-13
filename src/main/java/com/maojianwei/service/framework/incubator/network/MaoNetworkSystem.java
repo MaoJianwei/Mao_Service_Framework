@@ -45,7 +45,7 @@ public class MaoNetworkSystem extends MaoAbstractModule {
 
 
         try {
-            serverChannel = serverBootstrap.bind(SERVER_PORT).sync().channel();
+            //serverChannel = serverBootstrap.bind(SERVER_PORT).sync().channel();
 
             System.out.println(format("bind finish, channel info Open:{}, Active:{}, LocalAddress:{}",
                     serverChannel.isOpen(),
@@ -203,20 +203,20 @@ public class MaoNetworkSystem extends MaoAbstractModule {
         @Override
         public void initChannel(SocketChannel ch) {
             try {
-                System.out.println(format("initializing pipeline for channel $s ...", ch.toString()));
+                System.out.println(format("initializing pipeline for channel %s ...", ch.toString()));
 
                 ChannelPipeline p = ch.pipeline();
                 p.addLast(
                         //Attention - assume that if we use LengthFieldBasedFrameDecoder, the frame is certainly unbroken.
                         //2016.09.17
                         new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE,
-                                12, 4, 0, 0),
+                                9, 2, 0, 0),
                         new MaoProtocolDecoder(),
-                        new MaoProtocolEncoder()
-                        //new MaoProtocolDuplexHandler(networkCore)
+                        new MaoProtocolEncoder(),
+                        new MaoProtocolDuplexHandler(networkCore, networkCore.getNextPeerId())
                         );
 
-                System.out.println(format("initializing pipeline for channel $s ...", ch.toString()));
+                System.out.println(format("initialized pipeline for channel %s ...", ch.toString()));
             } catch (Throwable t) {
                 System.out.println(t.getMessage());
             }

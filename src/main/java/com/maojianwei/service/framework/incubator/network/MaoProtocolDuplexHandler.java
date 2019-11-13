@@ -12,20 +12,26 @@ import org.slf4j.LoggerFactory;
  */
 public class MaoProtocolDuplexHandler extends ChannelDuplexHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(MaoProtocolDuplexHandler.class);
+//    private static final Logger log = LoggerFactory.getLogger(MaoProtocolDuplexHandler.class);
 
 
     //private final boolean isRoleClient;
 
     private MaoNetworkCore networkCore;
+    private final int peerId;
+
+    private MaoPeer peer;
 
     //private MaoProtocolNode maoProtocolNode;
     //private MaoProtocolState state;
-    private Channel channel;
-    private String ip;
+    //private Channel channel;
+    //private String ip;
 
-    public MaoProtocolDuplexHandler(MaoNetworkCore networkCore){
+    public MaoProtocolDuplexHandler(MaoNetworkCore networkCore, int peerId) {
         this.networkCore = networkCore;
+        this.peerId = peerId;
+
+
         //this.isRoleClient = isRoleClient;
         //state = MaoProtocolState.INIT;
     }
@@ -153,26 +159,32 @@ public class MaoProtocolDuplexHandler extends ChannelDuplexHandler {
 //    }
 
 
-
-
-
-
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-        channel = ctx.channel();
-        ip = channel.remoteAddress().toString().split(":")[0].replace("/","");
-        networkCore.announceConnected(ip, channel);
+        Channel channel = ctx.channel();
+
+        String l = channel.localAddress().toString();
+        String r = channel.remoteAddress().toString();
+
+        String myIp = channel.localAddress().toString().split(":")[0].replace("/", "");
+        String peerIp = channel.remoteAddress().toString().split(":")[0].replace("/", "");
+        int myPort = 0;
+        int peerPort = 0;
+
+        peer = networkCore.announceNewPeer(channel, peerId, myIp, peerIp, myPort, peerPort);
+        peer.announceConnected();
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        ip = channel.remoteAddress().toString().split(":")[0].replace("/","");
-        networkCore.announceDisconnected(ip);
+        peer.announceDisconnected();
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
-        networkCore.dataReceived(ip, (String)msg);
+        if (msg instanceof String) {
+            peer.dataReceived((String) msg);
+        }
     }
 
     @Override
