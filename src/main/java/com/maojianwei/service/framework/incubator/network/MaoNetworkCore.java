@@ -3,6 +3,7 @@ package com.maojianwei.service.framework.incubator.network;
 import com.maojianwei.service.framework.incubator.network.lib.MaoPeer;
 import com.maojianwei.service.framework.incubator.network.lib.MaoPeerDemand;
 import com.maojianwei.service.framework.lib.MaoAbstractModule;
+import com.maojianwei.service.framework.lib.MaoReference;
 import io.netty.channel.Channel;
 
 import java.util.HashMap;
@@ -15,9 +16,11 @@ import static com.maojianwei.service.framework.incubator.network.lib.MaoPeerStat
 
 public class MaoNetworkCore extends MaoAbstractModule {
 
+    @MaoReference
+    private MaoNetworkUnderlay maoNetworkUnderlay;
+
     private Map<Integer, MaoPeer> peers = new HashMap<>();
     private AtomicInteger peerIdGenerator = new AtomicInteger(1);
-
 
     private Set<MaoPeerDemand> peerDemands = new HashSet<>();
 
@@ -53,7 +56,7 @@ public class MaoNetworkCore extends MaoAbstractModule {
     public void addPeerNeeds(MaoPeerDemand peerDemand) {
         if (!peerDemands.contains(peerDemand)) {
             peerDemands.add(peerDemand);
-
+            maoNetworkUnderlay.submitConnectDemand(peerDemand);
         }
     }
 

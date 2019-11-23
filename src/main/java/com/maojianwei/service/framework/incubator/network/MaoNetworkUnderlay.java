@@ -36,7 +36,7 @@ public class MaoNetworkUnderlay extends MaoAbstractModule {
 
 
     private MaoNetworkUnderlay() {
-        super("MaoNetworkSystem");
+        super("MaoNetworkUnderlay");
     }
     private static MaoNetworkUnderlay singletonInstance;
     public static MaoNetworkUnderlay getInstance() {
@@ -111,7 +111,7 @@ public class MaoNetworkUnderlay extends MaoAbstractModule {
 //        private MaoProtocolNetworkControllerImpl controller;
 
         MaoPeerDemand peerDemand;
-        Bootstrap b = new Bootstrap();
+        Bootstrap b;
 
         public ConnectTask(MaoPeerDemand peerDemand) {//(MaoProtocolNetworkControllerImpl controller) {
 //            this.controller = controller;
@@ -119,13 +119,7 @@ public class MaoNetworkUnderlay extends MaoAbstractModule {
 //            log.info("init Bootstrap...");
             this.peerDemand = peerDemand;
 
-            b = new Bootstrap();
-            b.group(bossGroup)
-                    .channel(NioSocketChannel.class)
-                    .option(ChannelOption.TCP_NODELAY, true)
-                    .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT) // TODO - CHECK
-                    .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 1000) // TODO - VERITY - ATTENTION !!!
-                    .handler(new NetworkChannelInitializer(maoNetworkCore));
+
 //            log.info("Bootstrap init ok");
         }
 
@@ -156,6 +150,24 @@ public class MaoNetworkUnderlay extends MaoAbstractModule {
 
 //            log.info("connecting to {}...", nodeIp);
             System.out.println("connecting to " + peerDemand.getIpStr());
+
+            // wait Network Underlay finish to be activated
+            while(bossGroup == null) {
+                try {
+                    System.out.println("wait");
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    return;
+                }
+            }
+            b = new Bootstrap();
+            b.group(bossGroup)
+                    .channel(NioSocketChannel.class)
+                    .option(ChannelOption.TCP_NODELAY, true)
+                    .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT) // TODO - CHECK
+                    .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 1000) // TODO - VERITY - ATTENTION !!!
+                    .handler(new NetworkChannelInitializer(maoNetworkCore));
+
             Channel ch;
             try {
                 ch = b.connect(peerDemand.getIpStr(), peerDemand.getPort()).sync().channel();
