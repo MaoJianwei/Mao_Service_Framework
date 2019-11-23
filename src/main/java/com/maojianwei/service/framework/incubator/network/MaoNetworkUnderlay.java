@@ -1,27 +1,53 @@
 package com.maojianwei.service.framework.incubator.network;
 
+import com.maojianwei.service.framework.incubator.network.lib.MaoPeerDemand;
 import com.maojianwei.service.framework.lib.MaoAbstractModule;
+import com.maojianwei.service.framework.lib.MaoReference;
+import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+
+import java.net.*;
+import java.util.Enumeration;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static java.lang.String.format;
 
-public class MaoNetworkSystem extends MaoAbstractModule {
+public class MaoNetworkUnderlay extends MaoAbstractModule {
 
     private static int TCP_BACKLOG_VALUE = 20;
     private static int SERVER_PORT = 6666; // TODO - modify
+
+    @MaoReference
+    private MaoNetworkCore maoNetworkCore;
 
     private Channel serverChannel;
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
 
-    public MaoNetworkSystem() {
+    private ExecutorService commonTaskPool = Executors.newCachedThreadPool();
+
+
+    private MaoNetworkUnderlay() {
         super("MaoNetworkSystem");
+    }
+    private static MaoNetworkUnderlay singletonInstance;
+    public static MaoNetworkUnderlay getInstance() {
+        if (singletonInstance == null) {
+            synchronized (MaoNetworkUnderlay.class) {
+                if (singletonInstance == null) {
+                    singletonInstance = new MaoNetworkUnderlay();
+                }
+            }
+        }
+        return singletonInstance;
     }
 
     @Override
@@ -29,7 +55,6 @@ public class MaoNetworkSystem extends MaoAbstractModule {
 
         bossGroup = new NioEventLoopGroup();
         workerGroup = new NioEventLoopGroup();
-
 
 
         ServerBootstrap serverBootstrap = new ServerBootstrap();
@@ -41,11 +66,11 @@ public class MaoNetworkSystem extends MaoAbstractModule {
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT) // TODO - CHECK
                 .childOption(ChannelOption.TCP_NODELAY, true)
                 .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT) // TODO - CHECK
-                .childHandler(new NetworkChannelInitializer(MaoNetworkCore.getInstance()));
+                .childHandler(new NetworkChannelInitializer(maoNetworkCore));
 
 
         try {
-            //serverChannel = serverBootstrap.bind(SERVER_PORT).sync().channel();
+            serverChannel = serverBootstrap.bind(SERVER_PORT).sync().channel();
 
             System.out.println(format("bind finish, channel info Open:{}, Active:{}, LocalAddress:{}",
                     serverChannel.isOpen(),
@@ -76,33 +101,69 @@ public class MaoNetworkSystem extends MaoAbstractModule {
         }
     }
 
+    public void submitConnectDemand(MaoPeerDemand peerDemand) {
+        commonTaskPool.submit(new ConnectTask(peerDemand));
+    }
 
-//
-//    private class ConnectTask implements Runnable {
-//
+    private class ConnectTask implements Runnable {
+
 //        private final Logger log = LoggerFactory.getLogger(getClass());
 //        private MaoProtocolNetworkControllerImpl controller;
-//
-//        Bootstrap b = new Bootstrap();
-//
-//        public ConnectTask(MaoProtocolNetworkControllerImpl controller) {
+
+        MaoPeerDemand peerDemand;
+        Bootstrap b = new Bootstrap();
+
+        public ConnectTask(MaoPeerDemand peerDemand) {//(MaoProtocolNetworkControllerImpl controller) {
 //            this.controller = controller;
-//
+
 //            log.info("init Bootstrap...");
-//            b.group(controller.bossGroup)
-//                    .channel(NioSocketChannel.class)
-//                    .option(ChannelOption.TCP_NODELAY, true)
-//                    .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT) // TODO - CHECK
-//                    .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 1000) // TODO - VERITY - ATTENTION !!!
-//                    .handler(new NetworkChannelInitializer(controller, true));
+            this.peerDemand = peerDemand;
+
+            b = new Bootstrap();
+            b.group(bossGroup)
+                    .channel(NioSocketChannel.class)
+                    .option(ChannelOption.TCP_NODELAY, true)
+                    .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT) // TODO - CHECK
+                    .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 1000) // TODO - VERITY - ATTENTION !!!
+                    .handler(new NetworkChannelInitializer(maoNetworkCore));
 //            log.info("Bootstrap init ok");
-//        }
-//
-//        @Override
-//        public void run() {
-//
+        }
+
+        @Override
+        public void run() {
+
 //            log.info("New ConnectTask start...");
-//
+
+            if (!peerDemand.isValid()) {
+                System.out.println("WARN: Fail to get peer ip" + peerDemand.getIpStr());
+            }
+
+            if (peerDemand.getIp() instanceof Inet4Address) {
+                Inet4Address localIpv4 = getLocalIpv4();
+                if (localIpv4 != null) {
+                    if (!verifyActiveConnectionRule(localIpv4, peerDemand.getIp())) {
+                        System.out.println("Local is bigger, ignore " + peerDemand.getIpStr());
+                        return;
+                    }
+                } else {
+//                    log.error("Local Ip is unavailable!(null)");
+                    return;
+                }
+            } else {
+                //TODO - ipv6
+                return;
+            }
+
+//            log.info("connecting to {}...", nodeIp);
+            System.out.println("connecting to " + peerDemand.getIpStr());
+            Channel ch;
+            try {
+                ch = b.connect(peerDemand.getIpStr(), peerDemand.getPort()).sync().channel();
+            } catch (Exception e) {
+//                log.warn("Exception while connecting others: {}, will connect others", e.getMessage());
+                System.out.println("Exception while connecting others: " + e.getMessage());
+            }
+
 //            while (true) {
 //                InetAddress nodeIp = controller.agent.getOneUnConnectedNode();
 //                log.info("get a new nodeIp: {}", nodeIp);
@@ -133,10 +194,10 @@ public class MaoNetworkSystem extends MaoAbstractModule {
 //                    log.warn("Exception while connecting others: {}, will connect others", e.getMessage());
 //                    continue;
 //                }
-//                log.info("client channel info Open:{}, Active:{}, RemoteAddress:{}",
-//                        ch.isOpen(),
-//                        ch.isActive(),
-//                        ch.remoteAddress().toString());
+////                log.info("client channel info Open:{}, Active:{}, RemoteAddress:{}",
+////                        ch.isOpen(),
+////                        ch.isActive(),
+////                        ch.remoteAddress().toString());
 //
 //                if (ch.isActive()) {
 //                    //TODO - CHECK - if it will be OPEN but not ACTIVE when success?
@@ -158,39 +219,82 @@ public class MaoNetworkSystem extends MaoAbstractModule {
 //                            hello.getHashValue());
 //                }
 //            }
-//
-//
 //            bossGroup.schedule(this, 30, TimeUnit.SECONDS);
-//        }
-//
-//        private boolean verifyActiveConnectionRule(InetAddress localIp, InetAddress remoteIp) {
-//            if (localIp.getClass().equals(remoteIp.getClass())) {
-//                byte[] localIpBytes = localIp.getAddress();
-//                byte[] remoteIpBytes = remoteIp.getAddress();
-//
-//                for (int i = 0; i < localIpBytes.length; i++) {
-//                    if (localIpBytes[i] < remoteIpBytes[i]) {
+        }
+
+        private Inet4Address getLocalIpv4() {
+
+//        Set<String> localAddresses = new HashSet<>();
+            try {
+                Enumeration<NetworkInterface> intfs = NetworkInterface.getNetworkInterfaces();
+                while (intfs.hasMoreElements()) {
+                    NetworkInterface intf = intfs.nextElement();
+                    if (intf.isLoopback() || intf.isVirtual() || !intf.isUp()) {
+                        continue;
+                    }
+
+                    Enumeration<InetAddress> addresses = intf.getInetAddresses();
+                    while (addresses.hasMoreElements()) {
+                        InetAddress ip = addresses.nextElement();
+                        if (ip instanceof Inet4Address) {
+                            return (Inet4Address) ip;
+                        } else if (ip instanceof Inet6Address) {
+                            //TODO
+
+                            // localAddresses.add(addresses.nextElement().getHostAddress().split("%")[0]);
+                            // split() serve to IPv6,
+                            // because the value will be such as 2001:da8:215:389:9097:e45c:94b0:9be5%ens32
+
+                            // For ipv6, false==isSiteLocalAddress() and false==isLinkLocalAddress()
+                            // can be simply considered as Global routable address
+                        } else {
+                            System.out.println("WARN: Unsupported Address, not ipv4 or ipv6, " + ip.toString());
+                        }
+                    }
+                }
+            } catch (SocketException e) {
+//                log.warn("Can not gain local IP, because: {}", e.getMessage());
+            } catch (Exception e) {
+//                log.error("Error got: " + e.getMessage());
+            }
+            return null;
+        }
+
+        /**
+         * Small ip connects to Large ip.
+         * @param localIp
+         * @param remoteIp
+         * @return
+         */
+        private boolean verifyActiveConnectionRule(InetAddress localIp, InetAddress remoteIp) {
+            if (localIp.getClass().equals(remoteIp.getClass())) {
+                byte[] localIpBytes = localIp.getAddress();
+                byte[] remoteIpBytes = remoteIp.getAddress();
+
+                for (int i = 0; i < localIpBytes.length; i++) {
+                    if (localIpBytes[i] < remoteIpBytes[i]) {
 //                        log.info("Verify Pass, local: {}, remote: {}",
 //                                localIp.getHostAddress(), remoteIp.getHostAddress());
-//                        return true;
-//                    } else if (localIpBytes[i] > remoteIpBytes[i]) {
+                        return true;
+                    } else if (localIpBytes[i] > remoteIpBytes[i]) {
 //                        log.info("Verify Deny, local: {}, remote: {}",
 //                                localIp.getHostAddress(), remoteIp.getHostAddress());
-//                        return false;
-//                    }
-//                }
+                        return false;
+                    }
+                }
 //                log.error("Local Ip is equal to Remote Ip! Please troubleshoot!" + EOL +
 //                        "localIp: {}, remoteIp: {}", localIp.getHostAddress(), remoteIp.getHostAddress());
-//            } else {
+            } else {
 //                log.error("IP type not match! localIp: {}, remoteIp: {}",
 //                        localIp.getClass(), remoteIp.getClass());
-//            }
-//            return false;
-//        }
-//    }
+            }
+            return false;
+        }
+    }
 
 
-    private class NetworkChannelInitializer extends ChannelInitializer<SocketChannel> {
+
+    private static class NetworkChannelInitializer extends ChannelInitializer<SocketChannel> {
 
         private MaoNetworkCore networkCore;
         //private boolean isRoleClient;

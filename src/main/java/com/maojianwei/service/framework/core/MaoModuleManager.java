@@ -33,6 +33,24 @@ public class MaoModuleManager {
         return singletonInstance;
     }
 
+
+    public MaoAbstractModule getModule(Class<? extends MaoAbstractModule> moduleClass) {
+        for (int i = 0; i < 3; i++) {
+            // need Lock to iterate the set of modules.
+            // but here, we use retry to deal with the related exception.
+            try {
+                for (MaoAbstractModule module : registeredModules.values()) {
+                    if (module.getClass() == moduleClass) {
+                        return module;
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("WARN: fail to iterate, @getModule, retry ...");
+            }
+        }
+        return null;
+    }
+
     /**
      * @param module
      * @return authentication key for unregister.

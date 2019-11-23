@@ -1,4 +1,4 @@
-package com.maojianwei.service.framework.incubator.network;
+package com.maojianwei.service.framework.incubator.network.lib;
 
 public enum MaoPeerState {
     INIT,

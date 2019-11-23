@@ -1,5 +1,6 @@
-package com.maojianwei.service.framework.incubator.network;
+package com.maojianwei.service.framework.incubator.network.lib;
 
+import com.maojianwei.service.framework.incubator.network.MaoNetworkCore;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 
