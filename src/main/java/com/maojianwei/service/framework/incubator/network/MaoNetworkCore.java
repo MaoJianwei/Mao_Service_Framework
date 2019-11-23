@@ -1,28 +1,25 @@
 package com.maojianwei.service.framework.incubator.network;
 
+import com.maojianwei.service.framework.incubator.network.lib.MaoPeer;
+import com.maojianwei.service.framework.incubator.network.lib.MaoPeerDemand;
 import com.maojianwei.service.framework.lib.MaoAbstractModule;
-import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.*;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.channel.Channel;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.maojianwei.service.framework.incubator.network.MaoPeerState.*;
-import static java.lang.String.format;
+import static com.maojianwei.service.framework.incubator.network.lib.MaoPeerState.*;
 
 public class MaoNetworkCore extends MaoAbstractModule {
 
     private Map<Integer, MaoPeer> peers = new HashMap<>();
-
     private AtomicInteger peerIdGenerator = new AtomicInteger(1);
 
 
+    private Set<MaoPeerDemand> peerDemands = new HashSet<>();
 
 
     private MaoNetworkCore() {
@@ -42,65 +39,25 @@ public class MaoNetworkCore extends MaoAbstractModule {
 
     @Override
     public void activate() {
-        NioEventLoopGroup bossGroup = new NioEventLoopGroup();
 
-        Bootstrap b = new Bootstrap();
-            b.group(bossGroup)
-                    .channel(NioSocketChannel.class)
-                    .option(ChannelOption.TCP_NODELAY, true)
-                    .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT) // TODO - CHECK
-                    .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 1000) // TODO - VERITY - ATTENTION !!!
-                    .handler(new ChannelInitializer<SocketChannel>() {
-                        @Override
-                        protected void initChannel(SocketChannel ch) throws Exception {
-                            try {
-                                System.out.println(format("initializing pipeline for client channel %s ...", ch.toString()));
-
-                                ChannelPipeline p = ch.pipeline();
-                                p.addLast(
-                                        //Attention - assume that if we use LengthFieldBasedFrameDecoder, the frame is certainly unbroken.
-                                        //2016.09.17
-                                        new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE,
-                                                9, 2, 0, 0),
-                                        new MaoProtocolDecoder(),
-                                        new MaoProtocolEncoder(),
-                                        new MaoProtocolDuplexHandler(getInstance(), getInstance().getNextPeerId())
-                                );
-
-                                System.out.println(format("initialized pipeline for client channel %s ...", ch.toString()));
-                            } catch (Throwable t) {
-                                System.out.println(t.getMessage());
-                            }
-                        }
-                    });
-
-        Channel ch;
-        try {
-            ch = b.connect("127.0.0.1", 6666).sync().channel();
-        } catch (Exception e) {
-            System.out.println(String.format("Exception while connecting others: %s, will connect others", e.getMessage()));
-            try {
-                e.wait();
-            } catch (InterruptedException ex) {
-                ex.printStackTrace();
-            }
-            return;
-        }
-        System.out.println(String.format("client channel info Open:%d, Active:%d, RemoteAddress:%s",
-                ch.isOpen(),
-                ch.isActive(),
-                ch.remoteAddress().toString()));
-        try {
-            ch.wait();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
     public void deactivate() {
 
     }
+
+
+
+
+    public void addPeerNeeds(MaoPeerDemand peerDemand) {
+        if (!peerDemands.contains(peerDemand)) {
+            peerDemands.add(peerDemand);
+
+        }
+    }
+
+
 
 
     public MaoPeer announceNewPeer(Channel channel, int peerId,
