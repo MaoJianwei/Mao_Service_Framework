@@ -1,7 +1,5 @@
 package com.maojianwei.service.framework.incubator.message.queue;
 
-import io.netty.util.internal.ConcurrentSet;
-
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
