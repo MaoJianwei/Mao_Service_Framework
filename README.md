@@ -11,10 +11,15 @@ A lightweight service framework for you to build up **modular System** or create
 
 ***Your Web needs*** ---extend---> **WebController** ---loaded-by---> **WebSystem** ---register-to---> **ModuleManager**
 
-.
-
 (WebSystem / WebController are based on Spring Boot & MVC)
 
+.
+
+## ***Dependency Injection*** is beta version now!
+
+implemented with ***MaoAbstractRunningTask*** and ***@MaoReference*** annotation
+
+.
 
 ## Architect
 
