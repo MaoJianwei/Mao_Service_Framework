@@ -1,11 +1,9 @@
 package com.maojianwei.service.framework.incubator.network;
 
+import com.maojianwei.service.framework.incubator.network.lib.MaoPeer;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Created by mao on 2016/9/17.
@@ -163,13 +161,13 @@ public class MaoProtocolDuplexHandler extends ChannelDuplexHandler {
     public void channelActive(ChannelHandlerContext ctx) {
         Channel channel = ctx.channel();
 
-        String l = channel.localAddress().toString();
-        String r = channel.remoteAddress().toString();
+        String [] l = channel.localAddress().toString().split(":");
+        String [] r = channel.remoteAddress().toString().split(":");
 
-        String myIp = channel.localAddress().toString().split(":")[0].replace("/", "");
-        String peerIp = channel.remoteAddress().toString().split(":")[0].replace("/", "");
-        int myPort = 0;
-        int peerPort = 0;
+        String myIp = l[0].replace("/", "");
+        String peerIp = r[0].replace("/", "");
+        int myPort = Integer.valueOf(l[1]);
+        int peerPort = Integer.valueOf(r[1]);
 
         peer = networkCore.announceNewPeer(channel, peerId, myIp, peerIp, myPort, peerPort);
         peer.announceConnected();
