@@ -1,5 +1,8 @@
 package com.maojianwei.service.framework.incubator.message.queue;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -9,6 +12,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * @param <E> Class of Event
  */
 public abstract class MaoAbstractSink<E, L extends MaoAbstractListener<E>> {
+
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
     private final int DEFAULT_RETRY_INTERVAL = 200; // ms
 
@@ -83,7 +88,7 @@ public abstract class MaoAbstractSink<E, L extends MaoAbstractListener<E>> {
                 try {
                     event = eventQueue.take();
                 } catch (InterruptedException e) {
-                    System.out.println("INFO: DispatchEvent take InterruptedException");
+                    log.info("DispatchEvent take InterruptedException");
                     break;
                 }
                 listenerLock.unlock();
@@ -91,7 +96,7 @@ public abstract class MaoAbstractSink<E, L extends MaoAbstractListener<E>> {
                     for (L l : listeners) {
                         if (l.isRelevant()) {
                             if(!l.postEvent(event)) {
-                                System.out.println("WARN: MaoAbstractListener.postEvent false");
+                                log.warn("MaoAbstractListener.postEvent false");
                             }
                         }
                     }

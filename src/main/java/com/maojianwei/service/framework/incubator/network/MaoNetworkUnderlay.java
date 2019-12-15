@@ -12,6 +12,8 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.*;
 import java.util.Enumeration;
@@ -21,6 +23,8 @@ import java.util.concurrent.Executors;
 import static java.lang.String.format;
 
 public class MaoNetworkUnderlay extends MaoAbstractModule {
+
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
     private static int TCP_BACKLOG_VALUE = 20;
     private static int SERVER_PORT = 6666; // TODO - modify
@@ -72,32 +76,32 @@ public class MaoNetworkUnderlay extends MaoAbstractModule {
         try {
             serverChannel = serverBootstrap.bind(SERVER_PORT).sync().channel();
 
-            System.out.println(format("bind finish, channel info Open:{}, Active:{}, LocalAddress:{}",
+            log.info("bind finish, channel info Open: {}, Active: {}, LocalAddress: {}",
                     serverChannel.isOpen(),
                     serverChannel.isActive(),
-                    serverChannel.localAddress().toString()));
+                    serverChannel.localAddress().toString());
         } catch (Throwable t) {
-            System.out.println(t.getMessage());
+            log.warn(t.getMessage());
         }
 
         //bossGroup.schedule(new ConnectTask(this), 0, TimeUnit.SECONDS);
 
-        System.out.println("schedule ConnectTask over");
+        log.info("schedule ConnectTask over");
     }
 
     @Override
     public void deactivate() {
         try {
-            System.out.println("closing serverChannel...");
+            log.info("closing serverChannel...");
             serverChannel.close().sync();
-            System.out.println("closed serverChannel.");
+            log.info("closed serverChannel.");
         } catch (Throwable t) {
-            System.out.println(t.getMessage());
+            log.warn(t.getMessage());
         } finally {
-            System.out.println("calling shutdownGracefully of workerGroup and bossGroup.");
+            log.info("calling shutdownGracefully of workerGroup and bossGroup.");
             workerGroup.shutdownGracefully();
             bossGroup.shutdownGracefully();
-            System.out.println("called shutdownGracefully of workerGroup and bossGroup.");
+            log.info("called shutdownGracefully of workerGroup and bossGroup.");
         }
     }
 
@@ -129,18 +133,18 @@ public class MaoNetworkUnderlay extends MaoAbstractModule {
 //            log.info("New ConnectTask start...");
 
             if (!peerDemand.isValid()) {
-                System.out.println("WARN: Fail to get peer ip" + peerDemand.getIpStr());
+                log.warn("Fail to get peer ip {}", peerDemand.getIpStr());
             }
 
             if (peerDemand.getIp() instanceof Inet4Address) {
                 Inet4Address localIpv4 = getLocalIpv4();
                 if (localIpv4 != null) {
                     if (!verifyActiveConnectionRule(localIpv4, peerDemand.getIp())) {
-                        System.out.println("Local is bigger, ignore " + peerDemand.getIpStr());
+                        log.info("Local is bigger, ignore {}", peerDemand.getIpStr());
                         return;
                     }
                 } else {
-//                    log.error("Local Ip is unavailable!(null)");
+                    log.error("Local Ip is unavailable!(null)");
                     return;
                 }
             } else {
@@ -149,12 +153,12 @@ public class MaoNetworkUnderlay extends MaoAbstractModule {
             }
 
 //            log.info("connecting to {}...", nodeIp);
-            System.out.println("connecting to " + peerDemand.getIpStr());
+            log.info("connecting to {}", peerDemand.getIpStr());
 
             // wait Network Underlay finish to be activated
             while(bossGroup == null) {
                 try {
-                    System.out.println("wait");
+                    log.info("wait");
                     Thread.sleep(500);
                 } catch (InterruptedException e) {
                     return;
@@ -172,8 +176,7 @@ public class MaoNetworkUnderlay extends MaoAbstractModule {
             try {
                 ch = b.connect(peerDemand.getIpStr(), peerDemand.getPort()).sync().channel();
             } catch (Exception e) {
-//                log.warn("Exception while connecting others: {}, will connect others", e.getMessage());
-                System.out.println("Exception while connecting others: " + e.getMessage());
+                log.warn("Exception while connecting {}: {}", peerDemand.getIpStr(), e.getMessage());
             }
 
 //            while (true) {
@@ -260,7 +263,7 @@ public class MaoNetworkUnderlay extends MaoAbstractModule {
                             // For ipv6, false==isSiteLocalAddress() and false==isLinkLocalAddress()
                             // can be simply considered as Global routable address
                         } else {
-                            System.out.println("WARN: Unsupported Address, not ipv4 or ipv6, " + ip.toString());
+                            log.warn("Unsupported Address, not ipv4 or ipv6: {}", ip.toString());
                         }
                     }
                 }
@@ -308,6 +311,8 @@ public class MaoNetworkUnderlay extends MaoAbstractModule {
 
     private static class NetworkChannelInitializer extends ChannelInitializer<SocketChannel> {
 
+        private final Logger log = LoggerFactory.getLogger(getClass());
+
         private MaoNetworkCore networkCore;
         //private boolean isRoleClient;
 
@@ -319,7 +324,7 @@ public class MaoNetworkUnderlay extends MaoAbstractModule {
         @Override
         public void initChannel(SocketChannel ch) {
             try {
-                System.out.println(format("initializing pipeline for channel %s ...", ch.toString()));
+                log.info("initializing pipeline for channel {} ...", ch.toString());
 
                 ChannelPipeline p = ch.pipeline();
                 p.addLast(
@@ -332,9 +337,9 @@ public class MaoNetworkUnderlay extends MaoAbstractModule {
                         new MaoProtocolDuplexHandler(networkCore, networkCore.getNextPeerId())
                         );
 
-                System.out.println(format("initialized pipeline for channel %s ...", ch.toString()));
+                log.info("initialized pipeline for channel {} ...", ch.toString());
             } catch (Throwable t) {
-                System.out.println(t.getMessage());
+                log.warn(t.getMessage());
             }
         }
     }

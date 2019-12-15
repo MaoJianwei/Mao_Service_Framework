@@ -1,48 +1,50 @@
 package com.maojianwei.service.framework.lib;
 
 import com.maojianwei.service.framework.core.MaoModuleManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 
 public class MaoAbstractRunningTask implements Runnable {
 
-    private MaoAbstractModule module;
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
+    private MaoAbstractModule module;
     public MaoAbstractRunningTask(MaoAbstractModule module) {
         this.module = module;
     }
 
     @Override
     public void run() {
-        System.out.println(String.format("Injecting dependency for %s ...", module.name()));
+        log.info("Injecting dependency for {} ...", module.name());
         try {
             injectDependency(module);
         } catch (InterruptedException e) {
-            System.out.println(String.format("INFO: exit required while injectDependency. Module: %s", module.name()));
+            log.warn("INFO: exit required while injectDependency. Module: {}", module.name());
             return;
         }
 
         if (module.isNeedShutdown()) {
+            log.info("Module need shutdown before activate {} ...", module.name());
             return;
         }
 
-        //TODO - Check exit flag!
-
-        System.out.println(String.format("Activating %s ...", module.name()));
+        log.info("Activating {} ...", module.name());
         module.activate();
-        System.out.println(String.format("Activated %s ...", module.name()));
+        log.info("Activated {} ...", module.name());
 
         if (!module.isNeedShutdown()) {
             try {
                 module.waitShutdown();
             } catch (InterruptedException e) {
-                System.out.println(String.format("InterruptedException when module.waitShutdown() for %s", module.name()));
+                log.warn("InterruptedException when module.waitShutdown() for {}", module.name());
             }
         }
 
-        System.out.println(String.format("Deactivating %s ...", module.name()));
+        log.info("Deactivating {} ...", module.name());
         module.deactivate();
-        System.out.println(String.format("Closed %s .", module.name()));
+        log.info("Closed {}.", module.name());
     }
 
     private void injectDependency(MaoAbstractModule module) throws InterruptedException {
@@ -60,7 +62,7 @@ public class MaoAbstractRunningTask implements Runnable {
                             try {
                                 f.set(module, dep);
                             } catch (IllegalAccessException e) {
-                                System.out.println(String.format("WARN: IllegalAccessException for class %s", moduleClass.getName()));
+                                log.warn("IllegalAccessException for class {}", moduleClass.getName());
                             }
                             break;
                         } else {
@@ -68,25 +70,9 @@ public class MaoAbstractRunningTask implements Runnable {
                         }
                     }
                 } else {
-                    System.out.println(String.format("WARN: class %s field %s is not a module", moduleClass.getName(), f.getName()));
+                    log.warn("class {} field {} is not a module", moduleClass.getName(), f.getName());
                 }
             }
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

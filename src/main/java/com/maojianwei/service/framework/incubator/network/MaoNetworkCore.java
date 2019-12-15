@@ -5,6 +5,8 @@ import com.maojianwei.service.framework.incubator.network.lib.MaoPeerDemand;
 import com.maojianwei.service.framework.lib.MaoAbstractModule;
 import com.maojianwei.service.framework.lib.MaoReference;
 import io.netty.channel.Channel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,6 +17,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static com.maojianwei.service.framework.incubator.network.lib.MaoPeerState.*;
 
 public class MaoNetworkCore extends MaoAbstractModule {
+
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
     @MaoReference
     private MaoNetworkUnderlay maoNetworkUnderlay;
@@ -70,7 +74,7 @@ public class MaoNetworkCore extends MaoAbstractModule {
             peer = new MaoPeer(this, channel, INIT, myIp, peerIp, myPort, peerPort, peerId);
             peers.put(peerId, peer);
         } else {
-            System.out.println(String.format("announceNewPeer: peer %d existed.", peerId));
+            log.info("announceNewPeer: peer {} existed.", peerId);
         }
         return peer;
     }
@@ -82,7 +86,7 @@ public class MaoNetworkCore extends MaoAbstractModule {
             peer.setState(CONNECTED);
             // TODO - send to event bus.
         } else {
-            System.out.println(String.format("announceConnected: warning, peer %d not existed.", peerId));
+            log.info("announceConnected: warning, peer {} not existed.", peerId);
         }
     }
 
@@ -92,17 +96,17 @@ public class MaoNetworkCore extends MaoAbstractModule {
             peer.setState(DISCONNECTED);
             // TODO - send to event bus.
         } else {
-            System.out.println(String.format("announceDisconnected: warning, peer %d not existed."));
+            log.warn("announceDisconnected: peer {} not existed.", peerId);
         }
     }
 
     public void dataReceived(int peerId, String data) {
         MaoPeer peer = peers.get(peerId);
         if (peer != null) {
-            System.out.println(String.format("dataReceived: peer %d, data: %s", peer.getId(), data));
+            log.info("dataReceived: peer {}, data: {}", peer.getId(), data);
             // TODO - send to event bus.
         } else {
-            System.out.println(String.format("dataReceived: warning, peer %d not existed."));
+            log.warn("dataReceived: peer {} not existed.", peerId);
         }
     }
 

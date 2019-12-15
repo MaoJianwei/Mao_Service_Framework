@@ -4,7 +4,10 @@ import com.maojianwei.service.framework.core.MaoModuleManager;
 import com.maojianwei.service.framework.core.MaoRunningCore;
 import com.maojianwei.service.framework.incubator.network.MaoNetworkCore;
 import com.maojianwei.service.framework.incubator.network.MaoNetworkUnderlay;
+import com.maojianwei.service.framework.incubator.node.DebugNodeManager;
 import com.maojianwei.service.framework.web.MaoWebSystem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Mao service framework (lightweight).
@@ -13,7 +16,8 @@ import com.maojianwei.service.framework.web.MaoWebSystem;
 public class Bootstrap {
     public static void main(String[] args) {
 
-        System.out.println("Mao service framework!");
+        Logger log = LoggerFactory.getLogger("Mao Service Framework bootstrap");
+        log.info("Mao service framework!");
 
         MaoRunningCore core = MaoRunningCore.getInstance();
         core.startPool();
@@ -31,14 +35,14 @@ public class Bootstrap {
         MaoNetworkCore networkCore = MaoNetworkCore.getInstance();
         int networkCoreKey = moduleManager.registerModule(networkCore);
 
-//        DebugNodeManager debugNodeManager = DebugNodeManager.getInstance();
-//        int nodeManagerKey = moduleManager.registerModule(debugNodeManager);
+        DebugNodeManager debugNodeManager = DebugNodeManager.getInstance();
+        int nodeManagerKey = moduleManager.registerModule(debugNodeManager);
 
         synchronized (core) {
             try {
                 core.wait(); // wait for system shutdown signal.
             } catch (InterruptedException e) {
-                System.out.println("InterruptedException when core.wait().");
+                log.warn("InterruptedException when core.wait().");
             }
         }
 
@@ -54,27 +58,11 @@ public class Bootstrap {
 
         try {
             while (!core.waitPoolFinish(500)) {}
-            System.out.println("Running Pool finish.");
+            log.info("Running Pool finish.");
         } catch (InterruptedException e) {
-            System.out.println("InterruptedException when core.waitPoolFinish().");
+            log.warn("InterruptedException when core.waitPoolFinish().");
         }
 
-        System.out.println("Mao service framework exited.");
+        log.info("Mao service framework exited.");
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -1,10 +1,15 @@
 package com.maojianwei.service.framework.incubator.network.lib;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Objects;
 
 public class MaoPeerDemand {
+
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
     private String ipStr;
     private int port;
@@ -41,7 +46,7 @@ public class MaoPeerDemand {
                     try {
                         ip = InetAddress.getByName(ipStr);
                     } catch (UnknownHostException e) {
-                        System.out.println(String.format("WARN: IP addr/Domain name is invalid, %s", ip));
+                        log.warn("IP addr/Domain name is invalid, {}", ip);
                     }
                 }
             }

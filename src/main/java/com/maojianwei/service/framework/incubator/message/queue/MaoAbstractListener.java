@@ -1,9 +1,15 @@
 package com.maojianwei.service.framework.incubator.message.queue;
 
+import com.maojianwei.service.framework.incubator.network.lib.MaoPeerDemand;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 public abstract class MaoAbstractListener<E> {
+
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
     private final int DEFAULT_RETRY_INTERVAL = 200; // ms
 
@@ -40,7 +46,7 @@ public abstract class MaoAbstractListener<E> {
         try {
             return eventQueue.offer(event, DEFAULT_RETRY_INTERVAL, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
-            System.out.println("WARN: MaoAbstractListener.postEvent InterruptedException");
+            log.warn("MaoAbstractListener.postEvent InterruptedException");
             return false;
         }
     }
@@ -70,7 +76,7 @@ public abstract class MaoAbstractListener<E> {
                 try {
                     event = eventQueue.take();
                 } catch (InterruptedException e) {
-                    System.out.println("INFO: ProcessEvent interrupt, exit.");
+                    log.info("ProcessEvent interrupt, exit.");
                     break;
                 }
 
@@ -78,12 +84,12 @@ public abstract class MaoAbstractListener<E> {
                     if (!needStop) {
                         process(event);
                     } else {
-                        System.out.println("INFO: ProcessEvent need stop before process, exit.");
+                        log.info("ProcessEvent need stop before process, exit.");
                         break;
                     }
                 } catch (Exception e) {
                     // Be tolerant for exceptions thrown by modules' listener.
-                    System.out.println(String.format("WARN: Module listener throw Exception %s", e.getMessage()));
+                    log.warn("Module listener throw Exception {}", e.getMessage());
                 }
             }
         }

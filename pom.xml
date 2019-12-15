@@ -53,12 +53,31 @@
 
     <dependencies>
 
+        <!-- Java Log slf4j API, should be placed before Spring-->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.29</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <version>2.12.1</version>
+        </dependency>
+
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-logging</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/io.netty/netty-all -->
+
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
@@ -75,13 +94,6 @@
             <artifactId>netty-codec</artifactId>
             <version>4.1.43.Final</version>
         </dependency>
-
-        <!--    <dependency>-->
-        <!--      <groupId>junit</groupId>-->
-        <!--      <artifactId>junit</artifactId>-->
-        <!--      <version>4.11</version>-->
-        <!--      <scope>test</scope>-->
-        <!--    </dependency>-->
     </dependencies>
 
     <dependencyManagement>

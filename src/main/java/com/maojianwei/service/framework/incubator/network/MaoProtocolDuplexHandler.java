@@ -4,14 +4,15 @@ import com.maojianwei.service.framework.incubator.network.lib.MaoPeer;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by mao on 2016/9/17.
  */
 public class MaoProtocolDuplexHandler extends ChannelDuplexHandler {
 
-//    private static final Logger log = LoggerFactory.getLogger(MaoProtocolDuplexHandler.class);
-
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
     //private final boolean isRoleClient;
 
@@ -189,14 +190,13 @@ public class MaoProtocolDuplexHandler extends ChannelDuplexHandler {
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) {
         //IdleTimeout
         //...
-        System.out.println(String.format("userEventTriggered, %s", evt.toString()));
-
+        log.warn("userEventTriggered, {}", evt.toString());
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         //MPParseError
         //...
-        System.out.println(String.format("exceptionCaught, %s", cause.getMessage()));
+        log.warn("exceptionCaught, {}", cause.getMessage());
     }
 }
