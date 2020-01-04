@@ -21,7 +21,7 @@ public class MaoAbstractRunningTask implements Runnable {
         try {
             injectDependency(module);
         } catch (InterruptedException e) {
-            log.warn("INFO: exit required while injectDependency. Module: {}", module.name());
+            log.warn("exit required while injectDependency. Module: {}", module.name());
             return;
         }
 
