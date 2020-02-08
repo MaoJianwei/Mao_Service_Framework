@@ -1,6 +1,10 @@
 package com.maojianwei.service.framework.lib;
 
-public abstract class MaoAbstractModule {
+import com.maojianwei.service.framework.incubator.message.queue.MaoAbstractListener;
+import com.maojianwei.service.framework.incubator.message.queue.MaoSink;
+
+public abstract class MaoAbstractModule<E, L extends MaoAbstractListener<E>> extends MaoSink<E, L> {
+
 
     private Boolean needShutdown = false;
 

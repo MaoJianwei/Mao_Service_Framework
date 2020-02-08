@@ -17,7 +17,7 @@ public abstract class MaoAbstractListener<E> {
     private Thread eventProcessor;
     private LinkedBlockingQueue<E> eventQueue;
 
-    private MaoAbstractListener() {
+    protected MaoAbstractListener() {
         needStop = true;
         eventProcessor = new Thread(new ProcessEvent());
         eventQueue = new LinkedBlockingQueue<>();
@@ -55,7 +55,7 @@ public abstract class MaoAbstractListener<E> {
     /**
      * Only used by Sink.
      */
-    private void startListener() {
+    public void startListener() {
         needStop = false;
         eventProcessor.start();
     }
@@ -63,9 +63,10 @@ public abstract class MaoAbstractListener<E> {
     /**
      * Only used by Sink.
      */
-    private void stopListener() {
+    public void stopListener() {
         needStop = true;
         eventProcessor.interrupt();
+        eventQueue.clear();
     }
 
     private class ProcessEvent implements Runnable {

@@ -11,7 +11,7 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * @param <E> Class of Event
  */
-public abstract class MaoAbstractSink<E, L extends MaoAbstractListener<E>> {
+public class MaoSink<E, L extends MaoAbstractListener<E>> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -23,12 +23,25 @@ public abstract class MaoAbstractSink<E, L extends MaoAbstractListener<E>> {
     private Thread dispatcher;
     private LinkedBlockingQueue<E> eventQueue;
 
-    public MaoAbstractSink() {
+    public MaoSink() {
         dispatcher = new Thread(new DispatchEvent());
         eventQueue = new LinkedBlockingQueue<>();
 
         listeners = new HashSet<>();
         listenerLock = new ReentrantLock();
+    }
+
+    public void startSink() {
+        dispatcher.start();
+    }
+
+    public void pauseSink() {
+        dispatcher.interrupt();
+    }
+
+    public void stopSink() {
+        dispatcher.interrupt();
+        eventQueue.clear();
     }
 
 
@@ -91,7 +104,7 @@ public abstract class MaoAbstractSink<E, L extends MaoAbstractListener<E>> {
                     log.info("DispatchEvent take InterruptedException");
                     break;
                 }
-                listenerLock.unlock();
+                listenerLock.lock();
                 try {
                     for (L l : listeners) {
                         if (l.isRelevant()) {

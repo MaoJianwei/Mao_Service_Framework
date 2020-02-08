@@ -1,5 +1,9 @@
 package com.maojianwei.service.framework.incubator.network;
 
+import com.maojianwei.service.framework.incubator.message.queue.MaoAbstractListener;
+import com.maojianwei.service.framework.incubator.message.queue.MaoSink;
+import com.maojianwei.service.framework.incubator.message.queue.event.PeerEvent;
+import com.maojianwei.service.framework.incubator.message.queue.event.PeerEventType;
 import com.maojianwei.service.framework.incubator.network.lib.MaoPeer;
 import com.maojianwei.service.framework.incubator.network.lib.MaoPeerDemand;
 import com.maojianwei.service.framework.lib.MaoAbstractModule;
@@ -8,6 +12,7 @@ import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -16,7 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.maojianwei.service.framework.incubator.network.lib.MaoPeerState.*;
 
-public class MaoNetworkCore extends MaoAbstractModule {
+public class MaoNetworkCore extends MaoAbstractModule<PeerEvent, MaoAbstractListener<PeerEvent>> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -46,12 +51,12 @@ public class MaoNetworkCore extends MaoAbstractModule {
 
     @Override
     public void activate() {
-
+        startSink();
     }
 
     @Override
     public void deactivate() {
-
+        stopSink();
     }
 
 
@@ -84,7 +89,9 @@ public class MaoNetworkCore extends MaoAbstractModule {
         MaoPeer peer = peers.get(peerId);
         if (peer != null) {
             peer.setState(CONNECTED);
-            // TODO - send to event bus.
+            postEvent(new PeerEvent(PeerEventType.DEVICE_CONNENCTED, peerId,
+                    peer.getMyIp(), peer.getPeerIp(), peer.getMyPort(), peer.getPeerPort(),
+                    LocalDateTime.now().toString(), null),3);
         } else {
             log.info("announceConnected: warning, peer {} not existed.", peerId);
         }
@@ -95,6 +102,9 @@ public class MaoNetworkCore extends MaoAbstractModule {
         if (peer != null) {
             peer.setState(DISCONNECTED);
             // TODO - send to event bus.
+            postEvent(new PeerEvent(PeerEventType.DEVICE_DISCONNECTED, peerId,
+                    peer.getMyIp(), peer.getPeerIp(), peer.getMyPort(), peer.getPeerPort(),
+                    LocalDateTime.now().toString(), null),3);
         } else {
             log.warn("announceDisconnected: peer {} not existed.", peerId);
         }
@@ -105,6 +115,9 @@ public class MaoNetworkCore extends MaoAbstractModule {
         if (peer != null) {
             log.info("dataReceived: peer {}, data: {}", peer.getId(), data);
             // TODO - send to event bus.
+            postEvent(new PeerEvent(PeerEventType.DEVICE_DISCONNECTED, peerId,
+                    peer.getMyIp(), peer.getPeerIp(), peer.getMyPort(), peer.getPeerPort(),
+                    LocalDateTime.now().toString(), data),3);
         } else {
             log.warn("dataReceived: peer {} not existed.", peerId);
         }
