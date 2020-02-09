@@ -23,6 +23,10 @@
             <AppenderRef ref="STDOUT"/>
             <AppenderRef ref="RollingFile"/>
         </Root>
+        <Logger name="org.springframework" level="warn" additivity="false">
+            <AppenderRef ref="STDOUT"/>
+            <AppenderRef ref="RollingFile"/>
+        </Logger>
 <!--        <Logger name="Console" level="debug">-->
 <!--            <AppenderRef ref="STDOUT"/>-->
 <!--        </Logger>-->

@@ -38,7 +38,7 @@ public class DebugNodeManager extends MaoAbstractModule {
 
     @Override
     public void activate() {
-        maoNetworkCore.addPeerNeeds(new MaoPeerDemand("127.0.0.1", 6688));
+//        maoNetworkCore.addPeerNeeds(new MaoPeerDemand("127.0.0.1", 6688));
         deviceListener.startListener();
         maoNetworkCore.addListener(deviceListener);
     }

@@ -35,7 +35,7 @@ public class MaoProtocolDecoder extends MessageToMessageDecoder<ByteBuf> {
             log.error(("Protocol prefix is invalid!"));
             return;
         }
-        log.info("Protocol prefix check OK!");
+        log.debug("Protocol prefix check OK!");
 
 //        short dataLen = (short) (msg.readShort() - PROTOCOL_PREFIX.length - 1 - 2 - CHECKSUM_LENGTH);
 //        byte[] data = new byte[dataLen + 1];
@@ -47,7 +47,7 @@ public class MaoProtocolDecoder extends MessageToMessageDecoder<ByteBuf> {
             MessageDigest digestGen = MessageDigest.getInstance("SHA-256");
 
             if (digestGen != null) {
-                log.info("will calculate SHA-256...");
+                log.debug("will calculate SHA-256...");
                 digestGen.update(packet, 0, packet.length - CHECKSUM_LENGTH);
                 byte[] sha256 = digestGen.digest();
                 if (checkSha256(sha256, packet)){

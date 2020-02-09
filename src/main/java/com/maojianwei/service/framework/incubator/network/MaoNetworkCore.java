@@ -98,7 +98,7 @@ public class MaoNetworkCore extends MaoAbstractModule<PeerEvent, MaoAbstractList
                     peer.getMyIp(), peer.getPeerIp(), peer.getMyPort(), peer.getPeerPort(),
                     LocalDateTime.now().toString(), null),3);
         } else {
-            log.info("announceConnected: warning, peer {} not existed.", peerId);
+            log.warn("announceConnected: peer {} not existed.", peerId);
         }
     }
 
@@ -106,7 +106,6 @@ public class MaoNetworkCore extends MaoAbstractModule<PeerEvent, MaoAbstractList
         MaoPeer peer = peers.get(peerId);
         if (peer != null) {
             peer.setState(DISCONNECTED);
-            // TODO - send to event bus.
             postEvent(new PeerEvent(PeerEventType.DEVICE_DISCONNECTED, peerId,
                     peer.getMyIp(), peer.getPeerIp(), peer.getMyPort(), peer.getPeerPort(),
                     LocalDateTime.now().toString(), null),3);
@@ -118,8 +117,7 @@ public class MaoNetworkCore extends MaoAbstractModule<PeerEvent, MaoAbstractList
     public void dataReceived(int peerId, String data) {
         MaoPeer peer = peers.get(peerId);
         if (peer != null) {
-            log.info("dataReceived: peer {}, data: {}", peer.getId(), data);
-            // TODO - send to event bus.
+            log.debug("dataReceived: peer {}, data: {}", peer.getId(), data);
             postEvent(new PeerEvent(PeerEventType.DEVICE_DATA_RECEIVED, peerId,
                     peer.getMyIp(), peer.getPeerIp(), peer.getMyPort(), peer.getPeerPort(),
                     LocalDateTime.now().toString(), data),3);

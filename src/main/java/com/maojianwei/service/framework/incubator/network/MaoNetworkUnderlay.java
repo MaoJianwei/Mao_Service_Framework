@@ -92,13 +92,13 @@ public class MaoNetworkUnderlay extends MaoAbstractModule {
     @Override
     public void deactivate() {
         try {
-            log.info("closing serverChannel...");
+            log.debug("closing serverChannel...");
             serverChannel.close().sync();
             log.info("closed serverChannel.");
         } catch (Throwable t) {
             log.warn(t.getMessage());
         } finally {
-            log.info("calling shutdownGracefully of workerGroup and bossGroup.");
+            log.debug("calling shutdownGracefully of workerGroup and bossGroup.");
             workerGroup.shutdownGracefully();
             bossGroup.shutdownGracefully();
             log.info("called shutdownGracefully of workerGroup and bossGroup.");

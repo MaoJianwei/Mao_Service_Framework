@@ -162,13 +162,13 @@ public class MaoProtocolDuplexHandler extends ChannelDuplexHandler {
     public void channelActive(ChannelHandlerContext ctx) {
         Channel channel = ctx.channel();
 
-        String [] l = channel.localAddress().toString().split(":");
-        String [] r = channel.remoteAddress().toString().split(":");
+        String [] local = channel.localAddress().toString().split(":");
+        String [] remote = channel.remoteAddress().toString().split(":");
 
-        String myIp = l[0].replace("/", "");
-        String peerIp = r[0].replace("/", "");
-        int myPort = Integer.valueOf(l[1]);
-        int peerPort = Integer.valueOf(r[1]);
+        String myIp = local[0].replace("/", "");
+        String peerIp = remote[0].replace("/", "");
+        int myPort = Integer.parseInt(local[1]);
+        int peerPort = Integer.parseInt(remote[1]);
 
         peer = networkCore.announceNewPeer(channel, peerId, myIp, peerIp, myPort, peerPort);
         peer.announceConnected();

@@ -50,9 +50,9 @@ public class MaoProtocolEncoder extends MessageToByteEncoder<String> {
 
         if (digestGen != null){
             try {
-                log.info("will calculate SHA-256...");
+                log.debug("will calculate SHA-256...");
                 byte[] sha256 = digestGen.digest(packet);
-                log.info("SHA-256 checksum is {}", String.format("%064x", new BigInteger(1, sha256)));
+                log.debug("SHA-256 checksum is {}", String.format("%064x", new BigInteger(1, sha256)));
 
                 out.writeBytes(packet);
                 out.writeBytes(sha256);
@@ -65,8 +65,8 @@ public class MaoProtocolEncoder extends MessageToByteEncoder<String> {
             out.writeBytes(packet);
         }
 
-        log.info("release tmp Bytebuf...");
+        log.debug("release tmp Bytebuf...");
         tmp.release();
-        log.info("release tmp over.");
+        log.debug("release tmp over.");
     }
 }
