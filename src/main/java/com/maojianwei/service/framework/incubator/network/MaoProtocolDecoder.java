@@ -7,6 +7,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 /**
@@ -16,51 +19,79 @@ public class MaoProtocolDecoder extends MessageToMessageDecoder<ByteBuf> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    private static final byte [] PROTOCOL_PREFIX = "MAOCLOUD".getBytes();
+    private static final byte[] PROTOCOL_PREFIX = "MAOCLOUD".getBytes();
     private static final int PROTOCOL_VERSION = 1;
     private static final int CHECKSUM_LENGTH = 32;
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf msg, List<Object> out) throws UnsupportedEncodingException {
 
-        if(msg.readableBytes() < PROTOCOL_PREFIX.length + 1 + 2) {
-            //FIXME - USING LengthFieldBasedFrameDecoder, SHOULD NOT COME HERE !
-            log.error(("readableBytes is not enough! Coding Attention!"));
-            return;
-        }
+        // Using LengthFieldBasedFrameDecoder to make sure frame integrity
 
-        if(!checkProtocolValid(msg)){
+        byte[] packet = new byte[msg.readableBytes()];
+        msg.readBytes(packet);
+
+        if (!checkProtocolValid(packet)) {
             log.error(("Protocol prefix is invalid!"));
             return;
         }
         log.info("Protocol prefix check OK!");
 
-        short dataLen = msg.readShort();
-        byte[] str = new byte[dataLen + 1];
-        msg.readBytes(str);
-        str[str.length-1] = 0;
-        out.add(new String(str));
+//        short dataLen = (short) (msg.readShort() - PROTOCOL_PREFIX.length - 1 - 2 - CHECKSUM_LENGTH);
+//        byte[] data = new byte[dataLen + 1];
+//        msg.readBytes(data, 0, dataLen);
+//        data[data.length - 1] = 0;
+//
+
+        try {
+            MessageDigest digestGen = MessageDigest.getInstance("SHA-256");
+
+            if (digestGen != null) {
+                log.info("will calculate SHA-256...");
+                digestGen.update(packet, 0, packet.length - CHECKSUM_LENGTH);
+                byte[] sha256 = digestGen.digest();
+                if (checkSha256(sha256, packet)){
+                    out.add(new String(packet,
+                            (PROTOCOL_PREFIX.length + 1 + 2),
+                            (packet.length - PROTOCOL_PREFIX.length - 1 - 2 - CHECKSUM_LENGTH)));
+                }
+            } else {
+                log.error("SHA-256 is not supported!");
+            }
+        } catch (Exception e) {
+            log.error("SHA-256 is not supported!");
+        }
     }
 
     /**
      * Check Protocol Prefix: MAOCLOUD
      *
-     * @param msg
+     * @param packet
      * @return
      */
-    private boolean checkProtocolValid(ByteBuf msg){
-        byte [] prefix = new byte[8];
-        msg.readBytes(prefix);
+    private boolean checkProtocolValid(byte[] packet) {
         for (int i = 0; i < PROTOCOL_PREFIX.length; i++) {
-            if (PROTOCOL_PREFIX[i] != prefix[i]) {
+            if (PROTOCOL_PREFIX[i] != packet[i]) {
                 return false;
             }
         }
 
-        if (msg.readByte() != PROTOCOL_VERSION) {
+        if (packet[PROTOCOL_PREFIX.length] != PROTOCOL_VERSION) {
             return false;
         }
 
+        return true;
+    }
+
+    private boolean checkSha256(byte[] sha256, byte[] packet) {
+        if (sha256.length < CHECKSUM_LENGTH || packet.length < CHECKSUM_LENGTH)
+            return false;
+
+        for (int i = 0; i < CHECKSUM_LENGTH; i++) {
+            if (sha256[i] != packet[packet.length - CHECKSUM_LENGTH + i]) {
+                return false;
+            }
+        }
         return true;
     }
 }

@@ -331,7 +331,7 @@ public class MaoNetworkUnderlay extends MaoAbstractModule {
                         //Attention - assume that if we use LengthFieldBasedFrameDecoder, the frame is certainly unbroken.
                         //2016.09.17
                         new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE,
-                                9, 2, 0, 0),
+                                9, 2, -11, 0),
                         new MaoProtocolDecoder(),
                         new MaoProtocolEncoder(),
                         new MaoProtocolDuplexHandler(networkCore, networkCore.getNextPeerId())

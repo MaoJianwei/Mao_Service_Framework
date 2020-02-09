@@ -3,6 +3,8 @@ package com.maojianwei.service.framework.incubator.network.lib;
 import com.maojianwei.service.framework.incubator.network.MaoNetworkCore;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
 
 public class MaoPeer {
 
@@ -49,7 +51,9 @@ public class MaoPeer {
     }
 
     public ChannelFuture write(String msg) {
-        return channel.write(msg);
+        ChannelFuture f = channel.write(msg);
+        channel.flush();
+        return f;
     }
 
 

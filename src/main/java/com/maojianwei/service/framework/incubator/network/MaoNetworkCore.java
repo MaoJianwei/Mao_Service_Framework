@@ -71,6 +71,11 @@ public class MaoNetworkCore extends MaoAbstractModule<PeerEvent, MaoAbstractList
 
 
 
+    public MaoPeer getPeer(int peerId) {
+        return peers.getOrDefault(peerId, null);
+    }
+
+
 
     public MaoPeer announceNewPeer(Channel channel, int peerId,
                                    String myIp, String peerIp, int myPort, int peerPort) {
@@ -115,13 +120,14 @@ public class MaoNetworkCore extends MaoAbstractModule<PeerEvent, MaoAbstractList
         if (peer != null) {
             log.info("dataReceived: peer {}, data: {}", peer.getId(), data);
             // TODO - send to event bus.
-            postEvent(new PeerEvent(PeerEventType.DEVICE_DISCONNECTED, peerId,
+            postEvent(new PeerEvent(PeerEventType.DEVICE_DATA_RECEIVED, peerId,
                     peer.getMyIp(), peer.getPeerIp(), peer.getMyPort(), peer.getPeerPort(),
                     LocalDateTime.now().toString(), data),3);
         } else {
             log.warn("dataReceived: peer {} not existed.", peerId);
         }
     }
+
 
 
     public int getNextPeerId() {
