@@ -1,5 +1,5 @@
 # Mao Service Framework :)
-[![Build Status](https://travis-ci.org/MaoJianwei/MaoFramework.svg?branch=master)](https://travis-ci.org/MaoJianwei/MaoFramework)
+[![Build Status](https://travis-ci.org/MaoJianwei/Mao_Service_Framework.svg?branch=master)](https://travis-ci.org/MaoJianwei/Mao_Service_Framework)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/MaoJianwei/MaoFramework/blob/master/LICENSE)
 
 A lightweight service framework for you to build up **modular System** or create **simple Applications**.
