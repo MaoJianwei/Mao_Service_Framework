@@ -34,4 +34,4 @@ E-mail: maojianwei2012@126.com
 
 .
 
-Supported by [JetBrains IDEA Open Source License](https://www.jetbrains.com/?from=Mao_Service_Framework) 2020-2021.
+![JetBrains Logo](https://www.jetbrains.com/favicon-32x32.png) Supported by [JetBrains IDEA Open Source License](https://www.jetbrains.com/?from=Mao_Service_Framework) 2020-2021. 
