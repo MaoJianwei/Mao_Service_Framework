@@ -31,3 +31,7 @@ Jianwei Mao
 https://www.MaoJianwei.com/
 
 E-mail: maojianwei2012@126.com
+
+.
+
+Supported by [JetBrains IDEA Open Source License](https://www.jetbrains.com/?from=Mao_Service_Framework) 2020-2021.
