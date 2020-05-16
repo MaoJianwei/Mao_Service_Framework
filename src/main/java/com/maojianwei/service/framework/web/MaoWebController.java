@@ -34,12 +34,17 @@ public class MaoWebController {
         networkCore.addPeerNeeds(new MaoPeerDemand(peerIp, peerPort));
         return "add " + peerIp + ":" + peerPort;
     }
+
+    @GetMapping(value = "/delPeer/{peerIp}/{peerPort}", produces = {APPLICATION_JSON_UTF8_VALUE})
+    public String delPeer(@PathVariable("peerIp") String peerIp, @PathVariable("peerPort") Integer peerPort) {
+        MaoNetworkCore networkCore = MaoNetworkCore.getInstance();
+        networkCore.delPeerNeeds(new MaoPeerDemand(peerIp, peerPort));
+        return "delete " + peerIp + ":" + peerPort;
+    }
+
+    @GetMapping(value = "/getPeers", produces = {APPLICATION_JSON_UTF8_VALUE})
+    public String getPeers() {
+        MaoNetworkCore networkCore = MaoNetworkCore.getInstance();
+        return networkCore.getPeerNeeds().toString();
+    }
 }
-
-
-
-
-
-
-
-

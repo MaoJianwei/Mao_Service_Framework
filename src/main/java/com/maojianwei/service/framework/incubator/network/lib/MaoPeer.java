@@ -3,8 +3,6 @@ package com.maojianwei.service.framework.incubator.network.lib;
 import com.maojianwei.service.framework.incubator.network.MaoNetworkCore;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GenericFutureListener;
 
 public class MaoPeer {
 
@@ -84,5 +82,20 @@ public class MaoPeer {
 
     public int getPeerPort() {
         return peerPort;
+    }
+
+
+    @Override
+    public String toString() {
+        return "MaoPeer{" +
+                "id=" + id +
+                ", state=" + state +
+                ", myIp='" + myIp + '\'' +
+                ", peerIp='" + peerIp + '\'' +
+                ", myPort=" + myPort +
+                ", peerPort=" + peerPort +
+                ", connectedTimestamp=" + connectedTimestamp +
+                ", disconnectedTimestamp=" + disconnectedTimestamp +
+                '}';
     }
 }

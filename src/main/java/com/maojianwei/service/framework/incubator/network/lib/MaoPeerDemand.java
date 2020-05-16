@@ -11,29 +11,17 @@ public class MaoPeerDemand {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    private String ipStr;
-    private int port;
+    private final String ipStr;
+    private final int port;
 
     private InetAddress ip; // both ipv4 & ipv6, now is ipv4
 
     public MaoPeerDemand(String ipStr, int port) {
-        this.ip = null;
-        this.ipStr = ipStr;
         this.port = port;
+        this.ipStr = ipStr;
+        this.ip = getIp();
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof MaoPeerDemand)) return false;
-        MaoPeerDemand that = (MaoPeerDemand) o;
-        return port == that.port && ip.equals(that.ip);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(ip, port);
-    }
 
     /**
      *
@@ -64,6 +52,29 @@ public class MaoPeerDemand {
 
     public int getPort() {
         return port;
+    }
+
+
+
+    @Override
+    public String toString() {
+        return "MaoPeerDemand{" +
+                "ipStr='" + ipStr + '\'' +
+                ", port=" + port +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof MaoPeerDemand)) return false;
+        MaoPeerDemand that = (MaoPeerDemand) o;
+        return port == that.port && ip.equals(that.ip); // FIXME: when ip is null.
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(ip, port);
     }
 }
 

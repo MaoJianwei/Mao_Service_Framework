@@ -17,10 +17,10 @@ import org.slf4j.LoggerFactory;
 
 import java.net.*;
 import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import static java.lang.String.format;
 
 public class MaoNetworkUnderlay extends MaoAbstractModule {
 
@@ -36,13 +36,16 @@ public class MaoNetworkUnderlay extends MaoAbstractModule {
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
 
+    private Set<MaoPeerDemand> connectDemands = new HashSet<>();
     private ExecutorService commonTaskPool = Executors.newCachedThreadPool();
 
 
     private MaoNetworkUnderlay() {
         super("MaoNetworkUnderlay");
     }
+
     private static MaoNetworkUnderlay singletonInstance;
+
     public static MaoNetworkUnderlay getInstance() {
         if (singletonInstance == null) {
             synchronized (MaoNetworkUnderlay.class) {
@@ -71,7 +74,6 @@ public class MaoNetworkUnderlay extends MaoAbstractModule {
                 .childOption(ChannelOption.TCP_NODELAY, true)
                 .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT) // TODO - CHECK
                 .childHandler(new NetworkChannelInitializer(maoNetworkCore));
-
 
         try {
             serverChannel = serverBootstrap.bind(SERVER_PORT).sync().channel();
@@ -106,7 +108,25 @@ public class MaoNetworkUnderlay extends MaoAbstractModule {
     }
 
     public void submitConnectDemand(MaoPeerDemand peerDemand) {
-        commonTaskPool.submit(new ConnectTask(peerDemand));
+        ConnectTask task = new ConnectTask(peerDemand);
+        addConnectDemand(peerDemand);
+        commonTaskPool.submit(task);
+    }
+
+    public void withdrawConnectDemand(MaoPeerDemand peerDemand) {
+        removeConnectDemand(peerDemand);
+    }
+
+    public void addConnectDemand(MaoPeerDemand peerDemand) {
+        synchronized (connectDemands) {
+            connectDemands.add(peerDemand);
+        }
+    }
+
+    public void removeConnectDemand(MaoPeerDemand peerDemand) {
+        synchronized (connectDemands) {
+            connectDemands.remove(peerDemand);
+        }
     }
 
     private class ConnectTask implements Runnable {
@@ -119,11 +139,8 @@ public class MaoNetworkUnderlay extends MaoAbstractModule {
 
         public ConnectTask(MaoPeerDemand peerDemand) {//(MaoProtocolNetworkControllerImpl controller) {
 //            this.controller = controller;
-
 //            log.info("init Bootstrap...");
             this.peerDemand = peerDemand;
-
-
 //            log.info("Bootstrap init ok");
         }
 
@@ -156,7 +173,7 @@ public class MaoNetworkUnderlay extends MaoAbstractModule {
             log.info("connecting to {}", peerDemand.getIpStr());
 
             // wait Network Underlay finish to be activated
-            while(bossGroup == null) {
+            while (bossGroup == null) {
                 try {
                     log.info("wait");
                     Thread.sleep(500);
@@ -169,15 +186,19 @@ public class MaoNetworkUnderlay extends MaoAbstractModule {
                     .channel(NioSocketChannel.class)
                     .option(ChannelOption.TCP_NODELAY, true)
                     .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT) // TODO - CHECK
-                    .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 1000) // TODO - VERITY - ATTENTION !!!
+                    .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 20000) // TODO - VERITY - ATTENTION !!!
                     .handler(new NetworkChannelInitializer(maoNetworkCore));
 
-            Channel ch;
-            try {
-                ch = b.connect(peerDemand.getIpStr(), peerDemand.getPort()).sync().channel();
-            } catch (Exception e) {
-                log.warn("Exception while connecting {}: {}", peerDemand.getIpStr(), e.getMessage());
-            }
+//            Channel ch;
+//            try {
+            b.connect(peerDemand.getIpStr(), peerDemand.getPort()).addListener(future -> {
+                // future.isSuccess();
+                removeConnectDemand(peerDemand);
+            });
+//            } catch (InterruptedException e) {
+//                log.warn("Exception while connecting {}: {}", peerDemand.getIpStr(), e.getMessage());
+//            }
+
 
 //            while (true) {
 //                InetAddress nodeIp = controller.agent.getOneUnConnectedNode();
@@ -277,6 +298,7 @@ public class MaoNetworkUnderlay extends MaoAbstractModule {
 
         /**
          * Small ip connects to Large ip.
+         *
          * @param localIp
          * @param remoteIp
          * @return
@@ -308,7 +330,6 @@ public class MaoNetworkUnderlay extends MaoAbstractModule {
     }
 
 
-
     private static class NetworkChannelInitializer extends ChannelInitializer<SocketChannel> {
 
         private final Logger log = LoggerFactory.getLogger(getClass());
@@ -335,7 +356,7 @@ public class MaoNetworkUnderlay extends MaoAbstractModule {
                         new MaoProtocolDecoder(),
                         new MaoProtocolEncoder(),
                         new MaoProtocolDuplexHandler(networkCore, networkCore.getNextPeerId())
-                        );
+                );
 
                 log.info("initialized pipeline for channel {} ...", ch.toString());
             } catch (Throwable t) {

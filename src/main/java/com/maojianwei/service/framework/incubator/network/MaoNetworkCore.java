@@ -1,7 +1,6 @@
 package com.maojianwei.service.framework.incubator.network;
 
 import com.maojianwei.service.framework.incubator.message.queue.MaoAbstractListener;
-import com.maojianwei.service.framework.incubator.message.queue.MaoSink;
 import com.maojianwei.service.framework.incubator.message.queue.event.PeerEvent;
 import com.maojianwei.service.framework.incubator.message.queue.event.PeerEventType;
 import com.maojianwei.service.framework.incubator.network.lib.MaoPeer;
@@ -69,7 +68,22 @@ public class MaoNetworkCore extends MaoAbstractModule<PeerEvent, MaoAbstractList
         }
     }
 
+    public void delPeerNeeds(MaoPeerDemand peerDemand) {
+        if (peerDemands.contains(peerDemand)) {
+            peerDemands.remove(peerDemand);
+            maoNetworkUnderlay.withdrawConnectDemand(peerDemand);
+        }
+    }
 
+    public Set<MaoPeerDemand> getPeerNeeds() {
+        return new HashSet<>(peerDemands);
+    }
+
+
+
+    public Set<MaoPeer> getPeers() {
+        return new HashSet<>(peers.values());
+    }
 
     public MaoPeer getPeer(int peerId) {
         return peers.getOrDefault(peerId, null);
@@ -88,7 +102,6 @@ public class MaoNetworkCore extends MaoAbstractModule<PeerEvent, MaoAbstractList
         }
         return peer;
     }
-
 
     public void announceConnected(int peerId) {
         MaoPeer peer = peers.get(peerId);
