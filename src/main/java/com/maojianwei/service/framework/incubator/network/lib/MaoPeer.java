@@ -36,9 +36,9 @@ public class MaoPeer {
         this.id = peerId;
     }
 
-    public void announceConnected() {
-        networkCore.announceConnected(id);
-    }
+//    public void announceConnected() {
+//        networkCore.announceConnected(id);
+//    }
 
     public void announceDisconnected() {
         networkCore.announceDisconnected(id);

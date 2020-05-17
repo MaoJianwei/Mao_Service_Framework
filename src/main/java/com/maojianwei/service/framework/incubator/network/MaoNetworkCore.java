@@ -60,6 +60,7 @@ public class MaoNetworkCore extends MaoAbstractModule<PeerEvent, MaoAbstractList
 
 
 
+    /* Config Database: PeerNeeds */
 
     public void addPeerNeeds(MaoPeerDemand peerDemand) {
         if (!peerDemands.contains(peerDemand)) {
@@ -81,6 +82,8 @@ public class MaoNetworkCore extends MaoAbstractModule<PeerEvent, MaoAbstractList
 
 
 
+    /* Running Database: PeerNeeds */
+
     public Set<MaoPeer> getPeers() {
         return new HashSet<>(peers.values());
     }
@@ -93,21 +96,30 @@ public class MaoNetworkCore extends MaoAbstractModule<PeerEvent, MaoAbstractList
 
     public MaoPeer announceNewPeer(Channel channel, int peerId,
                                    String myIp, String peerIp, int myPort, int peerPort) {
+        //TODO: FIXME
         MaoPeer peer = peers.get(peerId);
         if (peer == null) {
             peer = new MaoPeer(this, channel, INIT, myIp, peerIp, myPort, peerPort, peerId);
             peers.put(peerId, peer);
+
+            postEvent(new PeerEvent(PeerEventType.PEER_NEW, peerId,
+                    peer.getMyIp(), peer.getPeerIp(), peer.getMyPort(), peer.getPeerPort(),
+                    LocalDateTime.now().toString(), null));
         } else {
             log.info("announceNewPeer: peer {} existed.", peerId);
         }
         return peer;
     }
 
-    public void announceConnected(int peerId) {
+    public void permitConnected(MaoPeer peer) {
+        announceConnected(peer.getId());
+    }
+
+    private void announceConnected(int peerId) {
         MaoPeer peer = peers.get(peerId);
         if (peer != null) {
             peer.setState(CONNECTED);
-            postEvent(new PeerEvent(PeerEventType.DEVICE_CONNENCTED, peerId,
+            postEvent(new PeerEvent(PeerEventType.PEER_CONNECT, peerId,
                     peer.getMyIp(), peer.getPeerIp(), peer.getMyPort(), peer.getPeerPort(),
                     LocalDateTime.now().toString(), null),3);
         } else {
@@ -115,11 +127,15 @@ public class MaoNetworkCore extends MaoAbstractModule<PeerEvent, MaoAbstractList
         }
     }
 
+    public void banConnected(MaoPeer peer) {
+        announceDisconnected(peer.getId());
+    }
+
     public void announceDisconnected(int peerId) {
         MaoPeer peer = peers.get(peerId);
         if (peer != null) {
             peer.setState(DISCONNECTED);
-            postEvent(new PeerEvent(PeerEventType.DEVICE_DISCONNECTED, peerId,
+            postEvent(new PeerEvent(PeerEventType.PEER_DISCONNECT, peerId,
                     peer.getMyIp(), peer.getPeerIp(), peer.getMyPort(), peer.getPeerPort(),
                     LocalDateTime.now().toString(), null),3);
         } else {
@@ -131,7 +147,7 @@ public class MaoNetworkCore extends MaoAbstractModule<PeerEvent, MaoAbstractList
         MaoPeer peer = peers.get(peerId);
         if (peer != null) {
             log.debug("dataReceived: peer {}, data: {}", peer.getId(), data);
-            postEvent(new PeerEvent(PeerEventType.DEVICE_DATA_RECEIVED, peerId,
+            postEvent(new PeerEvent(PeerEventType.PEER_DATA, peerId,
                     peer.getMyIp(), peer.getPeerIp(), peer.getMyPort(), peer.getPeerPort(),
                     LocalDateTime.now().toString(), data),3);
         } else {
@@ -145,3 +161,23 @@ public class MaoNetworkCore extends MaoAbstractModule<PeerEvent, MaoAbstractList
         return peerIdGenerator.getAndAdd(1);
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
