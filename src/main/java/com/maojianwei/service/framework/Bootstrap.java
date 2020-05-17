@@ -4,6 +4,7 @@ import com.maojianwei.service.framework.core.MaoModuleManager;
 import com.maojianwei.service.framework.core.MaoRunningCore;
 import com.maojianwei.service.framework.incubator.network.MaoNetworkCore;
 import com.maojianwei.service.framework.incubator.network.MaoNetworkUnderlay;
+import com.maojianwei.service.framework.incubator.aaa.DebugAaaManager;
 import com.maojianwei.service.framework.incubator.node.DebugNodeManager;
 import com.maojianwei.service.framework.web.MaoWebSystem;
 import org.slf4j.Logger;
@@ -25,18 +26,21 @@ public class Bootstrap {
         MaoModuleManager moduleManager = MaoModuleManager.getInstance();
 
 
-        MaoWebSystem webSystem = new MaoWebSystem();
-        int webKey = moduleManager.registerModule(webSystem);
-
-
-        MaoNetworkUnderlay networkSystem = MaoNetworkUnderlay.getInstance();
-        int networkKey = moduleManager.registerModule(networkSystem);
+        MaoNetworkUnderlay networkUnderlay = MaoNetworkUnderlay.getInstance();
+        int networkKey = moduleManager.registerModule(networkUnderlay);
 
         MaoNetworkCore networkCore = MaoNetworkCore.getInstance();
         int networkCoreKey = moduleManager.registerModule(networkCore);
 
+        DebugAaaManager debugAaaManager = DebugAaaManager.getInstance();
+        int aaaManagerKey = moduleManager.registerModule(debugAaaManager);
+
         DebugNodeManager debugNodeManager = DebugNodeManager.getInstance();
         int nodeManagerKey = moduleManager.registerModule(debugNodeManager);
+
+        MaoWebSystem webSystem = new MaoWebSystem();
+        int webKey = moduleManager.registerModule(webSystem);
+
 
         synchronized (core) {
             try {
@@ -50,8 +54,11 @@ public class Bootstrap {
         boolean webBool = moduleManager.unregisterModule(webSystem, webKey); // For demonstrating, return True
         webBool = moduleManager.unregisterModule(webSystem, webKey);         // For demonstrating, return False without affect.
 
-        boolean networkBool = moduleManager.unregisterModule(networkSystem, networkKey); // For demonstrating, return True
+        boolean nodeBool = moduleManager.unregisterModule(debugNodeManager, nodeManagerKey);
+        boolean aaaBool = moduleManager.unregisterModule(debugAaaManager, aaaManagerKey);
+
         boolean networkCoreBool = moduleManager.unregisterModule(networkCore, networkCoreKey); // For demonstrating, return True
+        boolean networkBool = moduleManager.unregisterModule(networkUnderlay, networkKey); // For demonstrating, return True
 
 
         core.stopPool();

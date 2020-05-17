@@ -111,8 +111,8 @@ public class MaoNetworkCore extends MaoAbstractModule<PeerEvent, MaoAbstractList
         return peer;
     }
 
-    public void permitConnected(MaoPeer peer) {
-        announceConnected(peer.getId());
+    public void permitConnected(int peerId) {
+        announceConnected(peerId);
     }
 
     private void announceConnected(int peerId) {
@@ -127,8 +127,8 @@ public class MaoNetworkCore extends MaoAbstractModule<PeerEvent, MaoAbstractList
         }
     }
 
-    public void banConnected(MaoPeer peer) {
-        announceDisconnected(peer.getId());
+    public void banConnected(int peerId) {
+        announceDisconnected(peerId);
     }
 
     public void announceDisconnected(int peerId) {
