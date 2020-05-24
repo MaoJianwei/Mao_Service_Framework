@@ -28,7 +28,7 @@ public abstract class MaoAbstractListener<E> {
      *
      * @return
      */
-    protected boolean isRelevant() {
+    protected boolean isRelevant(E event) {
         return true;
     }
 
@@ -42,7 +42,7 @@ public abstract class MaoAbstractListener<E> {
      *
      * @param event
      */
-    protected boolean postEvent(E event) {
+    protected boolean passEvent(E event) {
         try {
             return eventQueue.offer(event, DEFAULT_RETRY_INTERVAL, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {

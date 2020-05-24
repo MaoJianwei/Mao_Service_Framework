@@ -64,6 +64,17 @@ public class DebugAaaManager extends MaoAbstractModule {
                     break;
             }
         }
+
+        @Override
+        protected boolean isRelevant(PeerEvent event) {
+            switch(event.getType()) {
+                case PEER_NEW:
+                case PEER_DATA:
+                    return true;
+                default:
+                    return false;
+            }
+        }
     }
 }
 

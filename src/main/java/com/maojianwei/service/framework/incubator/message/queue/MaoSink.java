@@ -107,8 +107,8 @@ public class MaoSink<E, L extends MaoAbstractListener<E>> {
                 listenerLock.lock();
                 try {
                     for (L l : listeners) {
-                        if (l.isRelevant()) {
-                            if(!l.postEvent(event)) {
+                        if (l.isRelevant(event)) {
+                            if(!l.passEvent(event)) {
                                 log.warn("MaoAbstractListener.postEvent false");
                             }
                         }

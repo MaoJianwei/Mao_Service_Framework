@@ -1,12 +1,22 @@
 package com.maojianwei.service.framework.incubator.node;
 
 import com.maojianwei.service.framework.incubator.message.queue.MaoAbstractListener;
+import com.maojianwei.service.framework.incubator.message.queue.event.DeviceEvent;
+import com.maojianwei.service.framework.incubator.message.queue.event.DeviceEventType;
 import com.maojianwei.service.framework.incubator.message.queue.event.PeerEvent;
+import com.maojianwei.service.framework.incubator.message.queue.event.PeerEventType;
 import com.maojianwei.service.framework.incubator.network.MaoNetworkCore;
+import com.maojianwei.service.framework.incubator.node.lib.MaoDevice;
+import com.maojianwei.service.framework.incubator.node.lib.MaoDeviceId;
+import com.maojianwei.service.framework.incubator.node.lib.MaoDeviceState;
 import com.maojianwei.service.framework.lib.MaoAbstractModule;
 import com.maojianwei.service.framework.lib.MaoReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DebugNodeManager extends MaoAbstractModule {
 
@@ -14,6 +24,8 @@ public class DebugNodeManager extends MaoAbstractModule {
 
     @MaoReference
     private MaoNetworkCore maoNetworkCore;
+
+    private Map<MaoDeviceId, MaoDevice> devices = new HashMap<>();
 
     private DebugPeerEventListener deviceListener = new DebugPeerEventListener();
 
@@ -54,11 +66,32 @@ public class DebugNodeManager extends MaoAbstractModule {
                     log.info("peer CONNECT {}, {} {} -> {} {}", event.getPeerId(),
                             event.getMyIp(), event.getMyPort(), event.getPeerIp(), event.getPeerPort());
 //                    maoNetworkCore.getPeer(event.getPeerId()).write(String.format("BigMao is Here,request,%d", System.currentTimeMillis()));
+
+                    MaoDeviceId newDeviceId = new MaoDeviceId(event.getPeerIp(), event.getPeerPort());
+                    MaoDevice newDevice = new MaoDevice(newDeviceId, MaoDeviceState.DEVICE_UP);
+                    devices.put(newDeviceId, newDevice);
+
+                    // not retry, avoid to block the thread of lower layer.
+                    postEvent(new DeviceEvent(DeviceEventType.DEVICE_CONNENCTED, newDevice));
                     break;
                 case PEER_DATA:
                     log.info("peer DATA {}, {} {} -> {} {}, {}", event.getPeerId(),
                             event.getMyIp(), event.getMyPort(), event.getPeerIp(), event.getPeerPort(),
                             event.getReceivedData());
+
+                    MaoDeviceId deviceId = new MaoDeviceId(event.getPeerIp(), event.getPeerPort());
+                    MaoDevice device = devices.get(deviceId);
+                    if(device != null) {
+                        if (device.getState() == MaoDeviceState.DEVICE_UP) {
+                            postEvent(new DeviceEvent(DeviceEventType.DEVICE_DATA_RECEIVED, device, event.getReceivedData()));
+                        } else {
+                            log.warn("device {} is DOWN", device.getDeviceId());
+                        }
+                    } else {
+
+                    }
+
+
 //                    String [] parts = event.getReceivedData().split(",");
 //                    switch (parts[1]) {
 //                        case "request":
@@ -76,6 +109,17 @@ public class DebugNodeManager extends MaoAbstractModule {
 //                            break;
 //                    }
                     break;
+            }
+        }
+
+        @Override
+        protected boolean isRelevant(PeerEvent event) {
+            switch(event.getType()) {
+                case PEER_CONNECT:
+                case PEER_DATA:
+                    return true;
+                default:
+                    return false;
             }
         }
     }
