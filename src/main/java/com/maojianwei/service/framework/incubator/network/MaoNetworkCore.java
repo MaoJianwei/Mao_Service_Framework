@@ -143,6 +143,7 @@ public class MaoNetworkCore extends MaoAbstractModule<PeerEvent, MaoAbstractList
         }
     }
 
+    // Just allow NetworkDataDispatcher to listen PEER_DATA, others must ignore this type.
     public void dataReceived(int peerId, String data) {
         MaoPeer peer = peers.get(peerId);
         if (peer != null) {

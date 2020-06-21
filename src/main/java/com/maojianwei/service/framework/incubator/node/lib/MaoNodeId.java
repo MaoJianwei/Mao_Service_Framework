@@ -1,13 +1,11 @@
 package com.maojianwei.service.framework.incubator.node.lib;
 
-import java.util.Objects;
-
-public class MaoDeviceId {
+public class MaoNodeId {
 
     private static String SPLITER = "/";
     private String deviceIdStr;
 
-    public MaoDeviceId(String ip, int port) {
+    public MaoNodeId(String ip, int port) {
         this.deviceIdStr = ip + SPLITER + port;
     }
 
@@ -16,10 +14,15 @@ public class MaoDeviceId {
     }
 
     @Override
+    public String toString() {
+        return getDeviceIdStr();
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        MaoDeviceId that = (MaoDeviceId) o;
+        MaoNodeId that = (MaoNodeId) o;
         return deviceIdStr.equals(that.deviceIdStr);
     }
 

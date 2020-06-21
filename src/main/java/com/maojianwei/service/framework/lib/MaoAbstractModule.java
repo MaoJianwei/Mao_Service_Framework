@@ -3,6 +3,11 @@ package com.maojianwei.service.framework.lib;
 import com.maojianwei.service.framework.incubator.message.queue.MaoAbstractListener;
 import com.maojianwei.service.framework.incubator.message.queue.MaoSink;
 
+/**
+ *
+ * @param <E>
+ * @param <L>
+ */
 public abstract class MaoAbstractModule<E, L extends MaoAbstractListener<E>> extends MaoSink<E, L> {
 
 
