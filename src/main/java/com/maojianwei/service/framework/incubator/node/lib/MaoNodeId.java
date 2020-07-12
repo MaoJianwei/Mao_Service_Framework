@@ -2,11 +2,11 @@ package com.maojianwei.service.framework.incubator.node.lib;
 
 public class MaoNodeId {
 
-    private static String SPLITER = "/";
+    public static String NODEID_SPLITER = "/";
     private String deviceIdStr;
 
     public MaoNodeId(String ip, int port) {
-        this.deviceIdStr = ip + SPLITER + port;
+        this.deviceIdStr = ip + NODEID_SPLITER + port;
     }
 
     public String getDeviceIdStr() {

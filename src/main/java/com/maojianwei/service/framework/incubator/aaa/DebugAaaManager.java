@@ -1,5 +1,6 @@
 package com.maojianwei.service.framework.incubator.aaa;
 
+import com.maojianwei.service.framework.incubator.aaa.lib.MaoAaaData;
 import com.maojianwei.service.framework.incubator.message.queue.MaoAbstractDataReceiver;
 import com.maojianwei.service.framework.incubator.message.queue.MaoAbstractListener;
 import com.maojianwei.service.framework.incubator.message.queue.event.DeviceEvent;
@@ -7,10 +8,18 @@ import com.maojianwei.service.framework.incubator.message.queue.event.PeerEvent;
 import com.maojianwei.service.framework.incubator.network.MaoNetworkCore;
 import com.maojianwei.service.framework.lib.MaoAbstractModule;
 import com.maojianwei.service.framework.lib.MaoReference;
+import org.omg.CORBA.ORB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import static com.maojianwei.service.framework.incubator.message.queue.event.PeerEventType.PEER_NEW;
+import static com.maojianwei.service.framework.incubator.network.lib.MaoDataType.AAA;
+import static com.maojianwei.service.framework.incubator.network.lib.MaoNetworkConst.DATA_SPLITER_INDEX;
+import static com.maojianwei.service.framework.incubator.network.lib.MaoNetworkConst.TYPE_SPLITER_INDEX;
+import static com.maojianwei.service.framework.incubator.node.lib.MaoNodeId.NODEID_SPLITER;
 
 public class DebugAaaManager extends MaoAbstractModule {
 
@@ -52,14 +61,44 @@ public class DebugAaaManager extends MaoAbstractModule {
     }
 
     private class AaaDataReceiver extends MaoAbstractDataReceiver {
+
+        /**
+         * AAA message format:
+         * RemoteIP,RemotePort
+         *
+         * Examples:
+         * 10.0.0.1,1080
+         * 2001::1,1080
+         */
+
         @Override
         protected void process(DeviceEvent event) {
-            log.info("peer data {}, {} {} -> {} {}, {}",
-                    event.
-                    event.getPeerId(),
-                    event.getMyIp(), event.getMyPort(), event.getPeerIp(), event.getPeerPort(),
-                    event.getReceivedData());
-            maoNetworkCore.permitConnected(event.getPeerId());
+            int peerId = Integer.parseInt(event.getDeviceId().getDeviceIdStr().split(NODEID_SPLITER)[1]);
+            MaoAaaData aaa = parseAaaData(event.getReceivedData());
+            if (aaa.isValid()) {
+                log.info("peer id {}, IP-{}, Port-{}, {}",
+                        peerId, aaa.getIp(), aaa.getPort(), event.getReceivedData());
+                maoNetworkCore.permitConnected(peerId);
+            } else {
+                log.warn("Fail to AAA, peer id {}, IP-{}, Port-{}, {}",
+                        peerId, aaa.getIp(), aaa.getPort(), event.getReceivedData());
+            }
+        }
+
+        private MaoAaaData parseAaaData(String originData) {
+            int spliterPos = originData.indexOf(",", DATA_SPLITER_INDEX);
+            if (spliterPos != -1) {
+                try {
+                    InetAddress ip = InetAddress.getByName(originData.substring(DATA_SPLITER_INDEX + 1, spliterPos));
+                    int port = Integer.parseInt(originData.substring(spliterPos + 1));
+                    return new MaoAaaData(ip, port);
+                } catch (UnknownHostException e) {
+                    log.warn("Fail to parse ip {}", originData.substring(DATA_SPLITER_INDEX + 1, spliterPos));
+                } catch (NumberFormatException e) {
+                    log.warn("Fail to parse port {}", originData.substring(spliterPos + 1));
+                }
+            }
+            return MaoAaaData.getInvalidInstance();
         }
     }
 
@@ -70,10 +109,12 @@ public class DebugAaaManager extends MaoAbstractModule {
                 case PEER_NEW:
                     log.info("new peer {}, {} {} -> {} {}", event.getPeerId(),
                             event.getMyIp(), event.getMyPort(), event.getPeerIp(), event.getPeerPort());
-                    maoNetworkCore.getPeer(event.getPeerId()).write("1,0,AAA it's me");
-                    break;
-                case PEER_DATA:
 
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(AAA.getHeader(3))
+                            .append(event.getMyIp()).append(",")
+                            .append(event.getMyPort());
+                    maoNetworkCore.getPeer(event.getPeerId()).write(AAA.getHeader(0) + sb.toString());
                     break;
             }
         }
