@@ -10,6 +10,10 @@ public enum MaoDataType {
         this.code = code;
     }
 
+    public String getHeader(int subType) {
+        return String.format("%02d,%02d;", code, subType);
+    }
+
     public int get() {
         return code;
     }

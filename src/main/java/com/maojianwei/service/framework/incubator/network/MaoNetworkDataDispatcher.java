@@ -20,14 +20,11 @@ import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static com.maojianwei.service.framework.incubator.network.lib.MaoDataType.AAA;
+import static com.maojianwei.service.framework.incubator.network.lib.MaoNetworkConst.*;
 
 public class MaoNetworkDataDispatcher extends MaoAbstractModule {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
-
-    private static final String TYPE_SPLITER = ",";
-    private static final int TYPE_NUMBER = 10;
-    private static final int SUB_TYPE_NUMBER = 10;
 
     @MaoReference
     private MaoNetworkCore networkCore;
@@ -42,12 +39,14 @@ public class MaoNetworkDataDispatcher extends MaoAbstractModule {
 
 
     private static MaoNetworkDataDispatcher singletonInstance;
-    private MaoNetworkDataDispatcher(){
+
+    private MaoNetworkDataDispatcher() {
         super("MaoNetworkDataDispatcher");
     }
+
     public static MaoNetworkDataDispatcher getInstance() {
         if (singletonInstance == null) {
-            synchronized(MaoNetworkDataDispatcher.class) {
+            synchronized (MaoNetworkDataDispatcher.class) {
                 if (singletonInstance == null) {
                     singletonInstance = new MaoNetworkDataDispatcher();
                 }
@@ -70,7 +69,7 @@ public class MaoNetworkDataDispatcher extends MaoAbstractModule {
     }
 
     public void registerReceiver(MaoAbstractDataReceiver receiver, int type, int subType) {
-        if(type > 0 && type <= TYPE_NUMBER && subType > 0 && subType <= SUB_TYPE_NUMBER) {
+        if (type > 0 && type <= TYPE_NUMBER && subType > 0 && subType <= SUB_TYPE_NUMBER) {
             receiverLocks[type][subType].lock();
             receiverSets[type][subType].add(receiver);
             receiverLocks[type][subType].unlock();
@@ -78,7 +77,7 @@ public class MaoNetworkDataDispatcher extends MaoAbstractModule {
     }
 
     public void unregisterReceiver(MaoAbstractDataReceiver receiver, int type, int subType) {
-        if(type > 0 && type <= TYPE_NUMBER && subType > 0 && subType <= SUB_TYPE_NUMBER) {
+        if (type > 0 && type <= TYPE_NUMBER && subType > 0 && subType <= SUB_TYPE_NUMBER) {
             receiverLocks[type][subType].lock();
             receiverSets[type][subType].remove(receiver);
             receiverLocks[type][subType].unlock();
@@ -87,35 +86,67 @@ public class MaoNetworkDataDispatcher extends MaoAbstractModule {
 
     private class PeerDataListener extends MaoAbstractListener<PeerEvent> {
 
+        /**
+         * Data format:
+         * Type,Subtype;upper-layer-data
+         * <p>
+         * Example:
+         * 09,06;Beijing Tower 118.5
+         */
+
         @Override
         protected void process(PeerEvent event) {
-            String data = event.getReceivedData();
-            String [] dataSlice = data.split(TYPE_SPLITER);
-            if (dataSlice.length > 2) {
-                int type = Integer.parseInt(dataSlice[0]);
-                int subType = Integer.parseInt(dataSlice[1]);
-                if(type > 0 && type <= TYPE_NUMBER && subType > 0 && subType <= SUB_TYPE_NUMBER) {
-                    MaoNodeId newDeviceId = new MaoNodeId(event.getPeerIp(), event.getPeerPort());
-                    if (type != AAA.get()) {
-                        // check device status
-                        if (nodeManager.getNode(newDeviceId).getState() != MaoNodeState.DEVICE_UP) {
-                            log.warn("Node {} is not online, drop data", newDeviceId);
-                            return;
-                        }
-                    }
 
-                    Set<MaoAbstractDataReceiver> receivers = receiverSets[type][subType];
-                    receiverLocks[type][subType].lock();
-                    for (MaoAbstractDataReceiver r : receivers) {
-                        r.postData(new DeviceEvent(DeviceEventType.DEVICE_DATA_RECEIVED, newDeviceId,
-                                LocalDateTime.now().toString(), data));
+            String data = event.getReceivedData();
+            if (data.length() <= DATA_SPLITER_INDEX) { // empty upper layer is valid.
+                log.warn("error data len {}", data.length());
+                return;
+            }
+            if (!data.startsWith(DATA_SPLITER, DATA_SPLITER_INDEX)) {
+                log.warn("error data without DATA_SPLITER, data len {}", data.length());
+                return;
+            }
+            if (!data.startsWith(TYPE_SPLITER, TYPE_SPLITER_INDEX)) {
+                log.warn("error data without TYPE_SPLITER, data len {}", data.length());
+                return;
+            }
+
+            int type, subType;
+            try {
+                type = Integer.parseInt(data.substring(0, TYPE_SPLITER_INDEX));
+                subType = Integer.parseInt(data.substring(0, DATA_SPLITER_INDEX));
+            } catch (NumberFormatException e) {
+                log.warn("error data type-str {} subType-str {}",
+                        data.substring(0, TYPE_SPLITER_INDEX), data.substring(0, DATA_SPLITER_INDEX));
+                return;
+            }
+
+            if (type > 0 && type <= TYPE_NUMBER && subType > 0 && subType <= SUB_TYPE_NUMBER) {
+                MaoNodeId deviceId;
+                if (type != AAA.get()) {
+                    deviceId = new MaoNodeId(event.getPeerIp(), event.getPeerPort());
+                    // check device status
+                    if (nodeManager.getNode(deviceId).getState() != MaoNodeState.DEVICE_UP) {
+                        log.warn("Node {} is not online, drop data", deviceId);
+                        return;
                     }
-                    receiverLocks[type][subType].unlock();
                 } else {
-                    log.warn("error data type {} subType {}", type, subType);
+                    // use port to carry PeerId to AAA manager.
+                    deviceId = new MaoNodeId("", event.getPeerId());
                 }
+
+                //FIXME: to avoid memory copy, I want something like slice.
+                //String upperData = data.substring(DATA_SPLITER_INDEX + 1);
+
+                Set<MaoAbstractDataReceiver> receivers = receiverSets[type][subType];
+                receiverLocks[type][subType].lock();
+                for (MaoAbstractDataReceiver r : receivers) {
+                    r.postData(new DeviceEvent(DeviceEventType.DEVICE_DATA_RECEIVED, deviceId,
+                            LocalDateTime.now().toString(), data));
+                }
+                receiverLocks[type][subType].unlock();
             } else {
-                log.warn("error data without type-subtype, data slice {}", dataSlice.length);
+                log.warn("error data type {} subType {}", type, subType);
             }
         }
 

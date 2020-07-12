@@ -3,6 +3,7 @@ package com.maojianwei.service.framework;
 import com.maojianwei.service.framework.core.MaoModuleManager;
 import com.maojianwei.service.framework.core.MaoRunningCore;
 import com.maojianwei.service.framework.incubator.network.MaoNetworkCore;
+import com.maojianwei.service.framework.incubator.network.MaoNetworkDataDispatcher;
 import com.maojianwei.service.framework.incubator.network.MaoNetworkUnderlay;
 import com.maojianwei.service.framework.incubator.aaa.DebugAaaManager;
 import com.maojianwei.service.framework.incubator.node.DebugNodeManager;
@@ -32,6 +33,10 @@ public class Bootstrap {
         MaoNetworkCore networkCore = MaoNetworkCore.getInstance();
         int networkCoreKey = moduleManager.registerModule(networkCore);
 
+        MaoNetworkDataDispatcher networkDataDispatcher = MaoNetworkDataDispatcher.getInstance();
+        int networkDataDispatcherKey = moduleManager.registerModule(networkDataDispatcher);
+
+
         DebugAaaManager debugAaaManager = DebugAaaManager.getInstance();
         int aaaManagerKey = moduleManager.registerModule(debugAaaManager);
 
@@ -41,6 +46,12 @@ public class Bootstrap {
         MaoWebSystem webSystem = new MaoWebSystem();
         int webKey = moduleManager.registerModule(webSystem);
 
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            synchronized (core) {
+                core.notify();
+            }
+        }));
 
         synchronized (core) {
             try {
@@ -57,6 +68,7 @@ public class Bootstrap {
         boolean nodeBool = moduleManager.unregisterModule(debugNodeManager, nodeManagerKey);
         boolean aaaBool = moduleManager.unregisterModule(debugAaaManager, aaaManagerKey);
 
+        boolean networkDataDispatcherBool = moduleManager.unregisterModule(networkDataDispatcher, networkDataDispatcherKey);
         boolean networkCoreBool = moduleManager.unregisterModule(networkCore, networkCoreKey); // For demonstrating, return True
         boolean networkBool = moduleManager.unregisterModule(networkUnderlay, networkKey); // For demonstrating, return True
 
