@@ -1,7 +1,5 @@
 package com.maojianwei.service.framework.incubator.aaa.lib;
 
-import java.net.Inet4Address;
-import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 

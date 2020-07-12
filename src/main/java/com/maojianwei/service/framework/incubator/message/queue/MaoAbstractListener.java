@@ -1,6 +1,5 @@
 package com.maojianwei.service.framework.incubator.message.queue;
 
-import com.maojianwei.service.framework.incubator.network.lib.MaoPeerDemand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

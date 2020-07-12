@@ -1,8 +1,6 @@
 package com.maojianwei.service.framework.incubator.message.queue;
 
-import com.maojianwei.service.framework.incubator.message.queue.MaoAbstractListener;
 import com.maojianwei.service.framework.incubator.message.queue.event.DeviceEvent;
-import com.maojianwei.service.framework.incubator.message.queue.event.DeviceEventType;
 
 public abstract class MaoAbstractDataReceiver extends MaoAbstractListener<DeviceEvent> {
 
