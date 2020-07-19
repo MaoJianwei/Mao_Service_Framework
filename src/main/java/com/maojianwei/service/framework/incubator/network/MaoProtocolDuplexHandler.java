@@ -160,6 +160,9 @@ public class MaoProtocolDuplexHandler extends ChannelDuplexHandler {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
+
+        // TODO - IPv6
+
         Channel channel = ctx.channel();
 
         String [] local = channel.localAddress().toString().split(":");

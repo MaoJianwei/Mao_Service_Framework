@@ -137,7 +137,7 @@ public class MaoNetworkUnderlay extends MaoAbstractModule {
         MaoPeerDemand peerDemand;
         Bootstrap b;
 
-        public ConnectTask(MaoPeerDemand peerDemand) {//(MaoProtocolNetworkControllerImpl controller) {
+        public ConnectTask(MaoPeerDemand peerDemand) { //(MaoProtocolNetworkControllerImpl controller) {
 //            this.controller = controller;
 //            log.info("init Bootstrap...");
             this.peerDemand = peerDemand;
@@ -161,11 +161,23 @@ public class MaoNetworkUnderlay extends MaoAbstractModule {
                         return;
                     }
                 } else {
-                    log.error("Local Ip is unavailable!(null)");
+                    log.error("Local IPv4 is unavailable! {}", localIpv4);
                     return;
                 }
-            } else {
+            } else if (peerDemand.getIp() instanceof Inet6Address) {
                 //TODO - ipv6
+                Inet6Address localIpv6 = getLocalIpv6();
+                if (localIpv6 != null) {
+                    if () {
+
+                    }
+                } else {
+                    log.error("Local IPv6 is unavailable! {}", localIpv6);
+                    return;
+                }
+                return;
+            } else {
+                log.warn("peer ip can not be recognized. {}", peerDemand.getIp());
                 return;
             }
 
@@ -258,7 +270,7 @@ public class MaoNetworkUnderlay extends MaoAbstractModule {
 //            bossGroup.schedule(this, 30, TimeUnit.SECONDS);
         }
 
-        private Inet4Address getLocalIpv4() {
+        private InetAddress getLocalIp(boolean ipv6) {
 
 //        Set<String> localAddresses = new HashSet<>();
             try {
@@ -272,9 +284,11 @@ public class MaoNetworkUnderlay extends MaoAbstractModule {
                     Enumeration<InetAddress> addresses = intf.getInetAddresses();
                     while (addresses.hasMoreElements()) {
                         InetAddress ip = addresses.nextElement();
-                        if (ip instanceof Inet4Address) {
-                            return (Inet4Address) ip;
-                        } else if (ip instanceof Inet6Address) {
+                        if (ipv6 && ip instanceof Inet6Address) {
+                            Inet6Address ip6 = (Inet6Address) ip;
+                            if (!ip6.isSiteLocalAddress() && !ip6.isLinkLocalAddress()) {
+
+                            }
                             //TODO
 
                             // localAddresses.add(addresses.nextElement().getHostAddress().split("%")[0]);
@@ -283,8 +297,10 @@ public class MaoNetworkUnderlay extends MaoAbstractModule {
 
                             // For ipv6, false==isSiteLocalAddress() and false==isLinkLocalAddress()
                             // can be simply considered as Global routable address
+                        } else if (!ipv6 && ip instanceof Inet4Address) {
+                            return ip;
                         } else {
-                            log.warn("Unsupported Address, not ipv4 or ipv6: {}", ip.toString());
+                            log.warn("Unsupported Address Family, not ipv4 or ipv6: {}", ip.toString());
                         }
                     }
                 }
