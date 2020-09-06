@@ -5,8 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 public class MaoAbstractRunningTask implements Runnable {
 
@@ -102,9 +100,8 @@ public class MaoAbstractRunningTask implements Runnable {
                 try {
                     f.setAccessible(true);
                     MaoAbstractModule dependency = (MaoAbstractModule) f.get(module);
-                    log.info("Wait dependency {} -> {}", module.name(), dependency.name());
+                    log.info("Dependency waiting {} -> {}", module.name(), dependency.name());
                     while(!dependency.readyNow()) {
-//                        log.info("Wait dependency again {} -> {}", module.name(), dependency.name());
                         Thread.sleep(200);
                     }
                     log.info("Dependency ready {} -> {}", module.name(), dependency.name());

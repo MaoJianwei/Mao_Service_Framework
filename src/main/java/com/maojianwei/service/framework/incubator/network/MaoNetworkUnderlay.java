@@ -42,7 +42,7 @@ public class MaoNetworkUnderlay extends MaoAbstractModule {
 
     private MaoNetworkUnderlay() {
         super("MaoNetworkUnderlay");
-        iAmReady();
+        iAmReady(); // no need to wait for that maoNetworkCore is ready.
     }
 
     private static MaoNetworkUnderlay singletonInstance;

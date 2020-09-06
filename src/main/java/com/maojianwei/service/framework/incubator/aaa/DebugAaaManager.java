@@ -61,9 +61,9 @@ public class DebugAaaManager extends MaoAbstractModule {
 
     @Override
     public void deactivate() {
-        log.info("to remove...");
         maoNetworkCore.removeListener(peerEventListener);
-        log.info("removed");
+
+        // FIXME: may throw java.lang.NullPointerException here
         networkDataDispatcher.unregisterReceiver(aaaDataReceiver, AAA.get(), 3);
         peerEventListener.stopListener();
     }

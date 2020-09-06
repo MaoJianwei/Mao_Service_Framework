@@ -32,9 +32,9 @@ public class MaoWebController {
     }
 
     @RequestMapping("/ok")
-    public Map<String, Boolean> getModulesHealth() {
+    public Map<String, Boolean> getAllModuleHealth() {
         MaoModuleManager moduleManager = MaoModuleManager.getInstance();
-        return moduleManager.getModulesHealth();
+        return moduleManager.getAllModuleHealth();
     }
 
 

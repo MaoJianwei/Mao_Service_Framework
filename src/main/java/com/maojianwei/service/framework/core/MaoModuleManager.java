@@ -55,17 +55,17 @@ public class MaoModuleManager {
         return null;
     }
 
-    public Map<String, Boolean> getModulesHealth() {
-        Map<String, Boolean> healths = new HashMap<>();
+    public Map<String, Boolean> getAllModuleHealth() {
+        Map<String, Boolean> health = new HashMap<>();
         try {
             for (MaoAbstractModule module : registeredModules.values()) {
-                healths.put(module.name(), module.readyNow());
+                health.put(module.name(), module.readyNow());
             }
         } catch (Exception e) {
             log.warn("Fail to iterate, @getModulesHealth");
-            healths.putIfAbsent("ready", false);
+            health.putIfAbsent("ready", false);
         }
-        return healths;
+        return health;
     }
 
     /**
