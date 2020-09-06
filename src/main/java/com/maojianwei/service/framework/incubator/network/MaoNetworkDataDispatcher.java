@@ -114,7 +114,7 @@ public class MaoNetworkDataDispatcher extends MaoAbstractModule {
             int type, subType;
             try {
                 type = Integer.parseInt(data.substring(0, TYPE_SPLITER_INDEX));
-                subType = Integer.parseInt(data.substring(0, DATA_SPLITER_INDEX));
+                subType = Integer.parseInt(data.substring(TYPE_SPLITER_INDEX + 1, DATA_SPLITER_INDEX));
             } catch (NumberFormatException e) {
                 log.warn("error data type-str {} subType-str {}",
                         data.substring(0, TYPE_SPLITER_INDEX), data.substring(0, DATA_SPLITER_INDEX));

@@ -153,31 +153,24 @@ public class MaoNetworkUnderlay extends MaoAbstractModule {
                 log.warn("Fail to get peer ip {}", peerDemand.getIpStr());
             }
 
-            if (peerDemand.getIp() instanceof Inet4Address) {
-                Inet4Address localIpv4 = getLocalIpv4();
-                if (localIpv4 != null) {
-                    if (!verifyActiveConnectionRule(localIpv4, peerDemand.getIp())) {
-                        log.info("Local is bigger, ignore {}", peerDemand.getIpStr());
-                        return;
-                    }
-                } else {
-                    log.error("Local IPv4 is unavailable! {}", localIpv4);
-                    return;
-                }
-            } else if (peerDemand.getIp() instanceof Inet6Address) {
-                //TODO - ipv6
-                Inet6Address localIpv6 = getLocalIpv6();
-                if (localIpv6 != null) {
-                    if () {
 
-                    }
-                } else {
-                    log.error("Local IPv6 is unavailable! {}", localIpv6);
+            InetAddress localIp = null;
+            if (peerDemand.getIp() instanceof Inet4Address) {
+                localIp = getLocalIp(false);
+            } else if (peerDemand.getIp() instanceof Inet6Address) {
+                localIp = getLocalIp(true);
+            } else {
+                log.warn("peer address family can not be recognized. {}", peerDemand.getIp());
+                return;
+            }
+
+            if (localIp != null) {
+                if (!verifyActiveConnectionRule(localIp, peerDemand.getIp())) {
+                    log.info("Local is bigger, ignore {}", peerDemand.getIpStr());
                     return;
                 }
-                return;
             } else {
-                log.warn("peer ip can not be recognized. {}", peerDemand.getIp());
+                log.error("Local IP is unavailable! {}", localIp);
                 return;
             }
 
@@ -204,7 +197,7 @@ public class MaoNetworkUnderlay extends MaoAbstractModule {
 //            Channel ch;
 //            try {
             b.connect(peerDemand.getIpStr(), peerDemand.getPort()).addListener(future -> {
-                // future.isSuccess();
+                boolean s = future.isSuccess();
                 removeConnectDemand(peerDemand);
             });
 //            } catch (InterruptedException e) {
@@ -287,7 +280,7 @@ public class MaoNetworkUnderlay extends MaoAbstractModule {
                         if (ipv6 && ip instanceof Inet6Address) {
                             Inet6Address ip6 = (Inet6Address) ip;
                             if (!ip6.isSiteLocalAddress() && !ip6.isLinkLocalAddress()) {
-
+                                return ip6;
                             }
                             //TODO
 
@@ -300,7 +293,7 @@ public class MaoNetworkUnderlay extends MaoAbstractModule {
                         } else if (!ipv6 && ip instanceof Inet4Address) {
                             return ip;
                         } else {
-                            log.warn("Unsupported Address Family, not ipv4 or ipv6: {}", ip.toString());
+                            //log.warn("Unsupported Address Family, not ipv4 or ipv6: {}", ip.toString());
                         }
                     }
                 }

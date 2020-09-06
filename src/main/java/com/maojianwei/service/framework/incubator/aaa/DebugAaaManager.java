@@ -6,6 +6,7 @@ import com.maojianwei.service.framework.incubator.message.queue.MaoAbstractListe
 import com.maojianwei.service.framework.incubator.message.queue.event.DeviceEvent;
 import com.maojianwei.service.framework.incubator.message.queue.event.PeerEvent;
 import com.maojianwei.service.framework.incubator.network.MaoNetworkCore;
+import com.maojianwei.service.framework.incubator.network.MaoNetworkDataDispatcher;
 import com.maojianwei.service.framework.lib.MaoAbstractModule;
 import com.maojianwei.service.framework.lib.MaoReference;
 import org.slf4j.Logger;
@@ -22,6 +23,9 @@ import static com.maojianwei.service.framework.incubator.node.lib.MaoNodeId.NODE
 public class DebugAaaManager extends MaoAbstractModule {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
+
+    @MaoReference
+    private MaoNetworkDataDispatcher networkDataDispatcher;
 
     @MaoReference
     private MaoNetworkCore maoNetworkCore;
@@ -112,7 +116,7 @@ public class DebugAaaManager extends MaoAbstractModule {
                     sb.append(AAA.getHeader(3))
                             .append(event.getMyIp()).append(",")
                             .append(event.getMyPort());
-                    maoNetworkCore.getPeer(event.getPeerId()).write(AAA.getHeader(0) + sb.toString());
+                    maoNetworkCore.getPeer(event.getPeerId()).write(AAA.getHeader(3) + sb.toString());
                     break;
             }
         }

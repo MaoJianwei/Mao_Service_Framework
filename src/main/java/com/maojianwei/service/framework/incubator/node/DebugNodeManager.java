@@ -5,6 +5,7 @@ import com.maojianwei.service.framework.incubator.message.queue.event.DeviceEven
 import com.maojianwei.service.framework.incubator.message.queue.event.DeviceEventType;
 import com.maojianwei.service.framework.incubator.message.queue.event.PeerEvent;
 import com.maojianwei.service.framework.incubator.network.MaoNetworkCore;
+import com.maojianwei.service.framework.incubator.network.lib.MaoPeerDemand;
 import com.maojianwei.service.framework.incubator.node.lib.MaoNode;
 import com.maojianwei.service.framework.incubator.node.lib.MaoNodeId;
 import com.maojianwei.service.framework.incubator.node.lib.MaoNodeState;
@@ -44,7 +45,6 @@ public class DebugNodeManager extends MaoAbstractModule<DeviceEvent, MaoAbstract
 
     @Override
     public void activate() {
-//        maoNetworkCore.addPeerNeeds(new MaoPeerDemand("127.0.0.1", 6688));
         startSink();
         deviceListener.startListener();
         maoNetworkCore.addListener(deviceListener);
