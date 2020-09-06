@@ -42,6 +42,7 @@ public class MaoNetworkUnderlay extends MaoAbstractModule {
 
     private MaoNetworkUnderlay() {
         super("MaoNetworkUnderlay");
+        iAmReady();
     }
 
     private static MaoNetworkUnderlay singletonInstance;
@@ -89,6 +90,7 @@ public class MaoNetworkUnderlay extends MaoAbstractModule {
         //bossGroup.schedule(new ConnectTask(this), 0, TimeUnit.SECONDS);
 
         log.info("schedule ConnectTask over");
+        iAmReady();
     }
 
     @Override

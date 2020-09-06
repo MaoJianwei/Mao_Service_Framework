@@ -48,6 +48,7 @@ public class DebugNodeManager extends MaoAbstractModule<DeviceEvent, MaoAbstract
         startSink();
         deviceListener.startListener();
         maoNetworkCore.addListener(deviceListener);
+        iAmReady();
     }
 
     @Override

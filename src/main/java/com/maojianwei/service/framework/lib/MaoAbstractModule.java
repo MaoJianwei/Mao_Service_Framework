@@ -12,6 +12,7 @@ public abstract class MaoAbstractModule<E, L extends MaoAbstractListener<E>> ext
 
 
     private Boolean needShutdown = false;
+    private boolean ready = false;
 
     private String name;
     public MaoAbstractModule(String name) {
@@ -23,6 +24,13 @@ public abstract class MaoAbstractModule<E, L extends MaoAbstractListener<E>> ext
 
     public abstract void deactivate();
 
+    protected void iAmReady() {
+        ready = true;
+    }
+
+    public boolean readyNow() {
+        return ready;
+    }
 
     public String name() {
         return name;

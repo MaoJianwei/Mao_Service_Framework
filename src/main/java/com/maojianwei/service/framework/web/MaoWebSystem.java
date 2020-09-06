@@ -16,6 +16,7 @@ public class MaoWebSystem extends MaoAbstractModule {
     @Override
     public void activate() {
         context = SpringApplication.run(MaoWebSystemEntry.class);
+        iAmReady();
     }
 
     @Override

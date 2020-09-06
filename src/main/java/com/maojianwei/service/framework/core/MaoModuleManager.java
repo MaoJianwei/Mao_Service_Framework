@@ -55,6 +55,19 @@ public class MaoModuleManager {
         return null;
     }
 
+    public Map<String, Boolean> getModulesHealth() {
+        Map<String, Boolean> healths = new HashMap<>();
+        try {
+            for (MaoAbstractModule module : registeredModules.values()) {
+                healths.put(module.name(), module.readyNow());
+            }
+        } catch (Exception e) {
+            log.warn("Fail to iterate, @getModulesHealth");
+            healths.putIfAbsent("ready", false);
+        }
+        return healths;
+    }
+
     /**
      * @param module
      * @return authentication key for unregister.

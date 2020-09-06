@@ -55,17 +55,46 @@ public class MaoNetworkDataDispatcher extends MaoAbstractModule {
         return singletonInstance;
     }
 
-
     @Override
     public void activate() {
+        initRegistry();
         peerDataListener.startListener();
         networkCore.addListener(peerDataListener);
+        iAmReady();
     }
 
     @Override
     public void deactivate() {
         networkCore.removeListener(peerDataListener);
         peerDataListener.stopListener();
+        destroyRegistry();
+    }
+
+    private void initRegistry() {
+        for (int i = 0; i < TYPE_NUMBER; i++) {
+            for (int j = 0; j < SUB_TYPE_NUMBER; j++) {
+                receiverSets[i][j] = new HashSet<>();
+            }
+        }
+        for (int i = 0; i < TYPE_NUMBER; i++) {
+            for (int j = 0; j < SUB_TYPE_NUMBER; j++) {
+                receiverLocks[i][j] = new ReentrantLock();
+            }
+        }
+    }
+
+    private void destroyRegistry() {
+        for (int i = 0; i < TYPE_NUMBER; i++) {
+            for (int j = 0; j < SUB_TYPE_NUMBER; j++) {
+                receiverSets[i][j].clear();
+                receiverSets[i][j] = null;
+            }
+        }
+        for (int i = 0; i < TYPE_NUMBER; i++) {
+            for (int j = 0; j < SUB_TYPE_NUMBER; j++) {
+                receiverLocks[i][j] = null;
+            }
+        }
     }
 
     public void registerReceiver(MaoAbstractDataReceiver receiver, int type, int subType) {

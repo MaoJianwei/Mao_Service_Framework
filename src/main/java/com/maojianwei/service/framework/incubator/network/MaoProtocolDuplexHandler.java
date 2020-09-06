@@ -7,6 +7,11 @@ import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.Inet4Address;
+import java.net.Inet6Address;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+
 /**
  * Created by mao on 2016/9/17.
  */
@@ -160,19 +165,36 @@ public class MaoProtocolDuplexHandler extends ChannelDuplexHandler {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-
         // TODO - IPv6
-
         Channel channel = ctx.channel();
 
-        String [] local = channel.localAddress().toString().split(":");
-        String [] remote = channel.remoteAddress().toString().split(":");
+        String [] local, remote;
+        String myIp, peerIp;
+        int myPort, peerPort;
 
-        String myIp = local[0].replace("/", "");
-        String peerIp = remote[0].replace("/", "");
-        int myPort = Integer.parseInt(local[1]);
-        int peerPort = Integer.parseInt(remote[1]);
+        InetSocketAddress lAddr = (InetSocketAddress) channel.localAddress();
+        InetSocketAddress rAddr = (InetSocketAddress) channel.remoteAddress();
 
+        if(lAddr.getAddress() instanceof Inet4Address) {
+            local = channel.localAddress().toString().split(":");
+            remote = channel.remoteAddress().toString().split(":");
+
+            myIp = local[0].replace("/", "");
+            peerIp = remote[0].replace("/", "");
+
+            myPort = Integer.parseInt(local[1]);
+            peerPort = Integer.parseInt(remote[1]);
+        } else if (lAddr.getAddress() instanceof Inet6Address) {
+            myIp = lAddr.getAddress().toString().split("/")[1];
+            peerIp = rAddr.getAddress().toString().split("/")[1];
+
+            myPort = lAddr.getPort();//Integer.parseInt(local[1]);
+            peerPort = rAddr.getPort();//Integer.parseInt(remote[1]);
+        } else {
+            log.warn("Address Family not supported. {}", lAddr.toString());
+            ctx.close();
+            return;
+        }
         peer = networkCore.announceNewPeer(channel, peerId, myIp, peerIp, myPort, peerPort);
 //        peer.announceConnected();
     }

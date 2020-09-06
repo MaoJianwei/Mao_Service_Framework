@@ -101,13 +101,16 @@ public class MaoSink<E, L extends MaoAbstractListener<E>> {
                 try {
                     event = eventQueue.take();
                 } catch (InterruptedException e) {
-                    log.info("DispatchEvent take InterruptedException");
+                    log.warn("DispatchEvent take InterruptedException");
                     break;
                 }
                 listenerLock.lock();
+//                log.info("posting {}", event.toString());
                 try {
                     for (L l : listeners) {
+//                        log.info("testing {}", l.toString());
                         if (l.isRelevant(event)) {
+//                            log.info("passing {}", l.toString());
                             if(!l.passEvent(event)) {
                                 log.warn("MaoAbstractListener.postEvent false");
                             }

@@ -31,6 +31,7 @@ public class DebugAaaManager extends MaoAbstractModule {
     private MaoNetworkCore maoNetworkCore;
 
     private DebugPeerEventListener peerEventListener = new DebugPeerEventListener();
+    private AaaDataReceiver aaaDataReceiver = new AaaDataReceiver();
 
     private DebugAaaManager() {
         super("DebugAaaManager");
@@ -53,12 +54,17 @@ public class DebugAaaManager extends MaoAbstractModule {
     public void activate() {
 //        maoNetworkCore.addPeerNeeds(new MaoPeerDemand("127.0.0.1", 6688));
         peerEventListener.startListener();
+        networkDataDispatcher.registerReceiver(aaaDataReceiver, AAA.get(), 3);
         maoNetworkCore.addListener(peerEventListener);
+        iAmReady();
     }
 
     @Override
     public void deactivate() {
+        log.info("to remove...");
         maoNetworkCore.removeListener(peerEventListener);
+        log.info("removed");
+        networkDataDispatcher.unregisterReceiver(aaaDataReceiver, AAA.get(), 3);
         peerEventListener.stopListener();
     }
 

@@ -5,6 +5,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 public class MaoAbstractRunningTask implements Runnable {
 
@@ -17,8 +19,8 @@ public class MaoAbstractRunningTask implements Runnable {
 
     @Override
     public void run() {
-        log.info("Injecting dependency for {} ...", module.name());
         try {
+            log.info("Injecting dependency for {} ...", module.name());
             injectDependency(module);
         } catch (InterruptedException e) {
             log.warn("exit required while injectDependency. Module: {}", module.name());
@@ -26,13 +28,26 @@ public class MaoAbstractRunningTask implements Runnable {
         }
 
         if (module.isNeedShutdown()) {
-            log.info("Module need shutdown before activate {} ...", module.name());
+            log.info("Module need shutdown before activate 1, {} ...", module.name());
             return;
         }
 
-        log.info("Activating {} ...", module.name());
-        module.activate();
-        log.info("Activated {} ...", module.name());
+        log.info("Wait dependencies ready, {} ...", module.name());
+        waitDependencyFinishActivating(module);
+
+        if (module.isNeedShutdown()) {
+            log.info("Module need shutdown before activate 2, {} ...", module.name());
+            return;
+        }
+
+        try {
+            log.info("Activating {} ...", module.name());
+            module.activate();
+            log.info("Activated {} ...", module.name());
+        } catch (Exception e) {
+            log.error("Activating exception: {}", e.toString());
+            return;
+        }
 
         if (!module.isNeedShutdown()) {
             try {
@@ -42,9 +57,13 @@ public class MaoAbstractRunningTask implements Runnable {
             }
         }
 
-        log.info("Deactivating {} ...", module.name());
-        module.deactivate();
-        log.info("Closed {}.", module.name());
+        try {
+            log.info("Deactivating {} ...", module.name());
+            module.deactivate();
+            log.info("Closed {}.", module.name());
+        } catch (Exception e) {
+            log.error("Deactivate exception: {}", e.toString());
+        }
     }
 
     private void injectDependency(MaoAbstractModule module) throws InterruptedException {
@@ -71,6 +90,31 @@ public class MaoAbstractRunningTask implements Runnable {
                     }
                 } else {
                     log.warn("class {} field {} is not a module", moduleClass.getName(), f.getName());
+                }
+            }
+        }
+    }
+
+    private void waitDependencyFinishActivating(MaoAbstractModule module) {
+        Class moduleClass = module.getClass();
+        for (Field f : moduleClass.getDeclaredFields()) {
+            if (f.isAnnotationPresent(MaoReference.class)) {
+                try {
+                    f.setAccessible(true);
+                    MaoAbstractModule dependency = (MaoAbstractModule) f.get(module);
+                    log.info("Wait dependency {} -> {}", module.name(), dependency.name());
+                    while(!dependency.readyNow()) {
+//                        log.info("Wait dependency again {} -> {}", module.name(), dependency.name());
+                        Thread.sleep(200);
+                    }
+                    log.info("Dependency ready {} -> {}", module.name(), dependency.name());
+                } catch (InterruptedException e) {
+                    break;
+                } catch (IllegalAccessException | IllegalArgumentException |
+                         NullPointerException | ExceptionInInitializerError e) {
+                    log.error("You should only annotate MaoAbstractModule's child with MaoReference, {}, ignoring: {}, exception: {}", module.name(), f.toString(), e.toString());
+                } catch (Exception e) {
+                    log.error("Unknown exception while waiting dependency, {}, {}", module.name(), e.toString());
                 }
             }
         }
