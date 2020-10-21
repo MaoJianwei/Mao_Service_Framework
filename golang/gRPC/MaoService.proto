@@ -1,0 +1,48 @@
+
+syntax = "proto3";
+
+option go_package = "framework.maojianwei.com/api";
+
+package grpc;
+
+service AAA {
+  rpc login(LoginInfo) returns (LoginResult);
+}
+
+message LoginInfo {
+  string localIp = 1;
+  string key = 10; // SSL cert encrypted localIp
+}
+
+message LoginResult {
+  bool success = 1;
+  string cookie = 2;
+}
+
+service Node {
+  rpc reportFeature(NodeFeature) returns (OkFlag);
+  rpc reportStatus(NodeStatus) returns (OkFlag);
+}
+
+message NodeFeature {
+  string name = 1;
+  repeated string IPs = 2;
+
+  string cookie = 10;
+}
+
+message NodeStatus {
+  double cpu = 1;
+  double cpuTemp = 2;
+  double gpuTemp = 3;
+  double envTemp = 4;
+  string sysTime = 5;
+
+  string cookie = 10;
+}
+
+message OkFlag {
+  bool success = 1;
+}
+
+message Empty {}
