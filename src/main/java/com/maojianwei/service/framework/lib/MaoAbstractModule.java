@@ -28,6 +28,12 @@ public abstract class MaoAbstractModule<E, L extends MaoAbstractListener<E>> ext
         ready = true;
     }
 
+    protected void iAmDone() {
+        ready = false;
+    }
+
+
+
     public boolean readyNow() {
         return ready;
     }

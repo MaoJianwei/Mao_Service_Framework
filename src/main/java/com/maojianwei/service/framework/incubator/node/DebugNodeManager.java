@@ -5,6 +5,7 @@ import com.maojianwei.service.framework.incubator.message.queue.event.DeviceEven
 import com.maojianwei.service.framework.incubator.message.queue.event.DeviceEventType;
 import com.maojianwei.service.framework.incubator.message.queue.event.PeerEvent;
 import com.maojianwei.service.framework.incubator.network.MaoNetworkCore;
+import com.maojianwei.service.framework.incubator.network.lib.MaoPeer;
 import com.maojianwei.service.framework.incubator.network.lib.MaoPeerDemand;
 import com.maojianwei.service.framework.incubator.node.lib.MaoNode;
 import com.maojianwei.service.framework.incubator.node.lib.MaoNodeId;
@@ -56,6 +57,7 @@ public class DebugNodeManager extends MaoAbstractModule<DeviceEvent, MaoAbstract
         maoNetworkCore.removeListener(deviceListener);
         deviceListener.stopListener();
         stopSink();
+        iAmDone();
     }
 
     public MaoNode getNode(MaoNodeId nodeId) {
@@ -75,47 +77,54 @@ public class DebugNodeManager extends MaoAbstractModule<DeviceEvent, MaoAbstract
 //                    maoNetworkCore.getPeer(event.getPeerId()).write(String.format("BigMao is Here,request,%d", System.currentTimeMillis()));
 
                     MaoNodeId newDeviceId = new MaoNodeId(event.getPeerIp(), event.getPeerPort());
-                    MaoNode newDevice = new MaoNode(newDeviceId, MaoNodeState.DEVICE_UP);
+                    MaoPeer peer = maoNetworkCore.getPeer(event.getPeerId());
+                    MaoNode newDevice;
+                    if (peer != null) {
+                        newDevice = new MaoNode(peer, newDeviceId, MaoNodeState.DEVICE_UP);
+                    } else {
+                        log.error("Peer not found for {}", newDeviceId);
+                        newDevice = new MaoNode(newDeviceId);
+                    }
                     devices.put(newDeviceId, newDevice);
 
                     // not retry, avoid to block the thread of lower layer.
                     postEvent(new DeviceEvent(DeviceEventType.DEVICE_CONNENCTED, newDeviceId));
                     break;
-                case PEER_DATA:
-                    log.info("peer DATA {}, {} {} -> {} {}, {}", event.getPeerId(),
-                            event.getMyIp(), event.getMyPort(), event.getPeerIp(), event.getPeerPort(),
-                            event.getReceivedData());
-
-                    MaoNodeId deviceId = new MaoNodeId(event.getPeerIp(), event.getPeerPort());
-                    MaoNode device = devices.get(deviceId);
-                    if(device != null) {
-                        if (device.getState() == MaoNodeState.DEVICE_UP) {
-                            postEvent(new DeviceEvent(DeviceEventType.DEVICE_DATA_RECEIVED, deviceId, event.getReceivedData()));
-                        } else {
-                            log.warn("device {} is DOWN", device.getDeviceId());
-                        }
-                    } else {
-                        log.warn("device {} not found", deviceId);
-                    }
-
-
-//                    String [] parts = event.getReceivedData().split(",");
-//                    switch (parts[1]) {
-//                        case "request":
-//                            maoNetworkCore.getPeer(event.getPeerId())
-//                                    .write(String.format("BigMao is Here,reply,%d", System.currentTimeMillis()));
-//                            break;
-//                        case "reply":
-//                            log.info("E2E Delay: {}ms", System.currentTimeMillis() - Long.parseLong(parts[2]));
-//                            try {
-//                                Thread.sleep(1000);
-//                            } catch (InterruptedException e) {
-//                                e.printStackTrace();
-//                            }
-//                            maoNetworkCore.getPeer(event.getPeerId()).write(String.format("BigMao is Here,request,%d", System.currentTimeMillis()));
-//                            break;
+//                case PEER_DATA:
+//                    log.info("peer DATA {}, {} {} -> {} {}, {}", event.getPeerId(),
+//                            event.getMyIp(), event.getMyPort(), event.getPeerIp(), event.getPeerPort(),
+//                            event.getReceivedData());
+//
+//                    MaoNodeId deviceId = new MaoNodeId(event.getPeerIp(), event.getPeerPort());
+//                    MaoNode device = devices.get(deviceId);
+//                    if(device != null) {
+//                        if (device.getState() == MaoNodeState.DEVICE_UP) {
+//                            postEvent(new DeviceEvent(DeviceEventType.DEVICE_DATA_RECEIVED, deviceId, event.getReceivedData()));
+//                        } else {
+//                            log.warn("device {} is DOWN", device.getDeviceId());
+//                        }
+//                    } else {
+//                        log.warn("device {} not found", deviceId);
 //                    }
-                    break;
+//
+//
+////                    String [] parts = event.getReceivedData().split(",");
+////                    switch (parts[1]) {
+////                        case "request":
+////                            maoNetworkCore.getPeer(event.getPeerId())
+////                                    .write(String.format("BigMao is Here,reply,%d", System.currentTimeMillis()));
+////                            break;
+////                        case "reply":
+////                            log.info("E2E Delay: {}ms", System.currentTimeMillis() - Long.parseLong(parts[2]));
+////                            try {
+////                                Thread.sleep(1000);
+////                            } catch (InterruptedException e) {
+////                                e.printStackTrace();
+////                            }
+////                            maoNetworkCore.getPeer(event.getPeerId()).write(String.format("BigMao is Here,request,%d", System.currentTimeMillis()));
+////                            break;
+////                    }
+//                    break;
             }
         }
 

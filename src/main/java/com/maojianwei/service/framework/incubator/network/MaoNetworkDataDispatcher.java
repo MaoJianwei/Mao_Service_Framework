@@ -19,7 +19,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static com.maojianwei.service.framework.incubator.network.lib.MaoDataType.AAA;
+import static com.maojianwei.service.framework.incubator.network.lib.MaoDataType.AAA_AUTH;
 import static com.maojianwei.service.framework.incubator.network.lib.MaoNetworkConst.*;
 
 public class MaoNetworkDataDispatcher extends MaoAbstractModule {
@@ -68,6 +68,7 @@ public class MaoNetworkDataDispatcher extends MaoAbstractModule {
         networkCore.removeListener(peerDataListener);
         peerDataListener.stopListener();
         destroyRegistry();
+        iAmDone();
     }
 
     private void initRegistry() {
@@ -152,7 +153,7 @@ public class MaoNetworkDataDispatcher extends MaoAbstractModule {
 
             if (type > 0 && type <= TYPE_NUMBER && subType > 0 && subType <= SUB_TYPE_NUMBER) {
                 MaoNodeId deviceId;
-                if (type != AAA.get()) {
+                if (type != AAA_AUTH.getType()) { // Just justify device state for not AAA.
                     deviceId = new MaoNodeId(event.getPeerIp(), event.getPeerPort());
                     // check device status
                     if (nodeManager.getNode(deviceId).getState() != MaoNodeState.DEVICE_UP) {

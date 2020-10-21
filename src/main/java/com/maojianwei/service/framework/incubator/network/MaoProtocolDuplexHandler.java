@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 
 /**
  * Created by mao on 2016/9/17.
@@ -225,3 +224,27 @@ public class MaoProtocolDuplexHandler extends ChannelDuplexHandler {
         log.warn("exceptionCaught, {}", cause.getMessage());
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

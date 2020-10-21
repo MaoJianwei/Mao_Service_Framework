@@ -97,7 +97,7 @@ public class MaoSink<E, L extends MaoAbstractListener<E>> {
         @Override
         public void run() {
             while (true) {
-                E event = null;
+                E event;
                 try {
                     event = eventQueue.take();
                 } catch (InterruptedException e) {
@@ -105,12 +105,9 @@ public class MaoSink<E, L extends MaoAbstractListener<E>> {
                     break;
                 }
                 listenerLock.lock();
-//                log.info("posting {}", event.toString());
                 try {
                     for (L l : listeners) {
-//                        log.info("testing {}", l.toString());
                         if (l.isRelevant(event)) {
-//                            log.info("passing {}", l.toString());
                             if(!l.passEvent(event)) {
                                 log.warn("MaoAbstractListener.postEvent false");
                             }
@@ -123,6 +120,12 @@ public class MaoSink<E, L extends MaoAbstractListener<E>> {
         }
     }
 }
+
+
+
+
+
+
 
 
 

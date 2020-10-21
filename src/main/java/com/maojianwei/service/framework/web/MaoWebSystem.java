@@ -24,6 +24,7 @@ public class MaoWebSystem extends MaoAbstractModule {
         if (context != null) {
             SpringApplication.exit(context);
             context = null;
+            iAmDone();
         }
     }
 

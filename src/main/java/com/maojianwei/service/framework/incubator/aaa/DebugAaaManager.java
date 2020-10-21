@@ -16,7 +16,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import static com.maojianwei.service.framework.incubator.message.queue.event.PeerEventType.PEER_NEW;
-import static com.maojianwei.service.framework.incubator.network.lib.MaoDataType.AAA;
+import static com.maojianwei.service.framework.incubator.network.lib.MaoDataType.AAA_ACCEPT;
+import static com.maojianwei.service.framework.incubator.network.lib.MaoDataType.AAA_AUTH;
 import static com.maojianwei.service.framework.incubator.network.lib.MaoNetworkConst.DATA_SPLITER_INDEX;
 import static com.maojianwei.service.framework.incubator.node.lib.MaoNodeId.NODEID_SPLITER;
 
@@ -54,7 +55,7 @@ public class DebugAaaManager extends MaoAbstractModule {
     public void activate() {
 //        maoNetworkCore.addPeerNeeds(new MaoPeerDemand("127.0.0.1", 6688));
         peerEventListener.startListener();
-        networkDataDispatcher.registerReceiver(aaaDataReceiver, AAA.get(), 3);
+        networkDataDispatcher.registerReceiver(aaaDataReceiver, AAA_AUTH.getType(), 3);
         maoNetworkCore.addListener(peerEventListener);
         iAmReady();
     }
@@ -64,8 +65,9 @@ public class DebugAaaManager extends MaoAbstractModule {
         maoNetworkCore.removeListener(peerEventListener);
 
         // FIXME: may throw java.lang.NullPointerException here
-        networkDataDispatcher.unregisterReceiver(aaaDataReceiver, AAA.get(), 3);
+        networkDataDispatcher.unregisterReceiver(aaaDataReceiver, AAA_AUTH.getType(), 3);
         peerEventListener.stopListener();
+        iAmDone();
     }
 
     private class AaaDataReceiver extends MaoAbstractDataReceiver {
@@ -81,12 +83,18 @@ public class DebugAaaManager extends MaoAbstractModule {
 
         @Override
         protected void process(DeviceEvent event) {
-            int peerId = Integer.parseInt(event.getDeviceId().getDeviceIdStr().split(NODEID_SPLITER)[1]);
+//            int peerId = Integer.parseInt(event.getDeviceId().getDeviceIdStr().split(NODEID_SPLITER)[1]);
             MaoAaaData aaa = parseAaaData(event.getReceivedData());
             if (aaa.isValid()) {
-                log.info("peer id {}, IP-{}, Port-{}, {}",
-                        peerId, aaa.getIp(), aaa.getPort(), event.getReceivedData());
+                log.info("Device id {}, IP-{}, Port-{}, {}",
+                        event.getDeviceId(), aaa.getIp(), aaa.getPort(), event.getReceivedData());
                 maoNetworkCore.permitConnected(peerId);
+
+                StringBuilder sb = new StringBuilder();
+                sb.append(AAA_ACCEPT.getHeader())
+                        .append(event.getDeviceId()).append(",")
+                        .append(event.getTimestamp());
+                maoNetworkCore.getPeer(event.getDeviceId().()).wri te(AAA_AUTH.getHeader() + sb.toString());
             } else {
                 log.warn("Fail to AAA, peer id {}, IP-{}, Port-{}, {}",
                         peerId, aaa.getIp(), aaa.getPort(), event.getReceivedData());
@@ -119,10 +127,10 @@ public class DebugAaaManager extends MaoAbstractModule {
                             event.getMyIp(), event.getMyPort(), event.getPeerIp(), event.getPeerPort());
 
                     StringBuilder sb = new StringBuilder();
-                    sb.append(AAA.getHeader(3))
+                    sb.append(AAA_AUTH.getHeader())
                             .append(event.getMyIp()).append(",")
                             .append(event.getMyPort());
-                    maoNetworkCore.getPeer(event.getPeerId()).write(AAA.getHeader(3) + sb.toString());
+                    maoNetworkCore.getPeer(event.getPeerId()).write(AAA_AUTH.getHeader() + sb.toString());
                     break;
             }
         }
@@ -133,6 +141,15 @@ public class DebugAaaManager extends MaoAbstractModule {
         }
     }
 }
+
+
+
+
+
+
+
+
+
 
 
 

@@ -57,6 +57,7 @@ public class MaoNetworkCore extends MaoAbstractModule<PeerEvent, MaoAbstractList
     @Override
     public void deactivate() {
         stopSink();
+        iAmDone();
     }
 
 
