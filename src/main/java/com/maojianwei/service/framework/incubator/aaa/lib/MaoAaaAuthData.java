@@ -3,20 +3,20 @@ package com.maojianwei.service.framework.incubator.aaa.lib;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-public class MaoAaaData {
+public class MaoAaaAuthData {
 
     private InetAddress ip; // IPv4/IPv6
     private int port;
 
 
-    public MaoAaaData(InetAddress ip, int port) {
+    public MaoAaaAuthData(InetAddress ip, int port) {
         this.ip = ip;
         this.port = port;
     }
 
-    public static MaoAaaData getInvalidInstance() {
+    public static MaoAaaAuthData getInvalidInstance() {
         try {
-            return new MaoAaaData(InetAddress.getByName("::"), 0);
+            return new MaoAaaAuthData(InetAddress.getByName("::"), 0);
         } catch (UnknownHostException e) {
             // Never come in
             return null;

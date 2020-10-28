@@ -195,7 +195,6 @@ public class MaoProtocolDuplexHandler extends ChannelDuplexHandler {
             return;
         }
         peer = networkCore.announceNewPeer(channel, peerId, myIp, peerIp, myPort, peerPort);
-//        peer.announceConnected();
     }
 
     @Override

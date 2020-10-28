@@ -90,41 +90,6 @@ public class DebugNodeManager extends MaoAbstractModule<DeviceEvent, MaoAbstract
                     // not retry, avoid to block the thread of lower layer.
                     postEvent(new DeviceEvent(DeviceEventType.DEVICE_CONNENCTED, newDeviceId));
                     break;
-//                case PEER_DATA:
-//                    log.info("peer DATA {}, {} {} -> {} {}, {}", event.getPeerId(),
-//                            event.getMyIp(), event.getMyPort(), event.getPeerIp(), event.getPeerPort(),
-//                            event.getReceivedData());
-//
-//                    MaoNodeId deviceId = new MaoNodeId(event.getPeerIp(), event.getPeerPort());
-//                    MaoNode device = devices.get(deviceId);
-//                    if(device != null) {
-//                        if (device.getState() == MaoNodeState.DEVICE_UP) {
-//                            postEvent(new DeviceEvent(DeviceEventType.DEVICE_DATA_RECEIVED, deviceId, event.getReceivedData()));
-//                        } else {
-//                            log.warn("device {} is DOWN", device.getDeviceId());
-//                        }
-//                    } else {
-//                        log.warn("device {} not found", deviceId);
-//                    }
-//
-//
-////                    String [] parts = event.getReceivedData().split(",");
-////                    switch (parts[1]) {
-////                        case "request":
-////                            maoNetworkCore.getPeer(event.getPeerId())
-////                                    .write(String.format("BigMao is Here,reply,%d", System.currentTimeMillis()));
-////                            break;
-////                        case "reply":
-////                            log.info("E2E Delay: {}ms", System.currentTimeMillis() - Long.parseLong(parts[2]));
-////                            try {
-////                                Thread.sleep(1000);
-////                            } catch (InterruptedException e) {
-////                                e.printStackTrace();
-////                            }
-////                            maoNetworkCore.getPeer(event.getPeerId()).write(String.format("BigMao is Here,request,%d", System.currentTimeMillis()));
-////                            break;
-////                    }
-//                    break;
             }
         }
 

@@ -37,7 +37,9 @@ public class MaoNode {
 
     public void write(String data) {
         if(peer != null) {
-            peer.write(data);
+            synchronized (peer) {
+                peer.write(data);
+            }
         }
     }
 }

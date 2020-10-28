@@ -161,6 +161,7 @@ public class MaoNetworkDataDispatcher extends MaoAbstractModule {
                         return;
                     }
                 } else {
+                    // FIXME
                     // use port to carry PeerId to AAA manager.
                     deviceId = new MaoNodeId("", event.getPeerId());
                 }
