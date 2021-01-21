@@ -42,6 +42,7 @@ public class MaoAbstractRunningTask implements Runnable {
             log.info("Activating {} ...", module.name());
             module.activate();
             log.info("Activated {} ...", module.name());
+            System.out.printf("************* Activated %s ...\n", module.name());
         } catch (Exception e) {
             log.error("Activating exception: {}", e.toString());
             return;
@@ -100,11 +101,11 @@ public class MaoAbstractRunningTask implements Runnable {
                 try {
                     f.setAccessible(true);
                     MaoAbstractModule dependency = (MaoAbstractModule) f.get(module);
-                    log.info("Dependency waiting {} -> {}", module.name(), dependency.name());
+                    log.debug("Dependency waiting {} -> {}", module.name(), dependency.name());
                     while(!dependency.readyNow()) {
                         Thread.sleep(200);
                     }
-                    log.info("Dependency ready {} -> {}", module.name(), dependency.name());
+                    log.debug("Dependency ready {} -> {}", module.name(), dependency.name());
                 } catch (InterruptedException e) {
                     break;
                 } catch (IllegalAccessException | IllegalArgumentException |

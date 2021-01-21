@@ -7,7 +7,7 @@ import com.maojianwei.service.framework.lib.MaoAbstractModule;
 public class NodePairQoSManager extends MaoAbstractModule<DeviceEvent, MaoAbstractListener<DeviceEvent>> {
 
     public NodePairQoSManager() {
-        super("");
+        super("NodePairQoSManager");
     }
 
     @Override
@@ -19,4 +19,7 @@ public class NodePairQoSManager extends MaoAbstractModule<DeviceEvent, MaoAbstra
     public void deactivate() {
 
     }
+
+
+
 }
